@@ -1,13 +1,11 @@
 from django.urls import include, path
 from rest_framework import routers
-from . import views
+from .views import dummy_view
 
-router = routers.DefaultRouter()
-router.register(r'dummytest', views.DummyViewSet)
-
+app_name = 'testing'
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('', include(router.urls)),
+    path('dummy/', dummy_view, name="dummy"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
