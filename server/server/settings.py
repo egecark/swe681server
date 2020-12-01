@@ -26,7 +26,7 @@ SECRET_KEY = 'oj$_v33=xt1*ral-a&+2i38@qi&-pz6t1r=bk3b_uv+ns$o@ih'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS=['ec2-13-59-68-71.us-east-2.compute.amazonaws.com',
+ALLOWED_HOSTS=['ec2-3-15-171-235.us-east-2.compute.amazonaws.com',
                '127.0.0.1',]
 
 
