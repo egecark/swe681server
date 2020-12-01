@@ -5,4 +5,4 @@ from .models import Dummy
 class DummySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Dummy
-        fields = ('id','value')
+        fields = ['id','value']
