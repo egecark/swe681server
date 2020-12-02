@@ -27,6 +27,7 @@ SECRET_KEY = 'oj$_v33=xt1*ral-a&+2i38@qi&-pz6t1r=bk3b_uv+ns$o@ih'
 DEBUG = True
 
 ALLOWED_HOSTS=['ec2-3-17-188-16.us-east-2.compute.amazonaws.com',
+                'swe681project.com',
                '127.0.0.1',]
 
 
