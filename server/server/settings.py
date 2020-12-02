@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-import os
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +26,12 @@ SECRET_KEY = 'oj$_v33=xt1*ral-a&+2i38@qi&-pz6t1r=bk3b_uv+ns$o@ih'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['ec2-34-228-9-251.compute-1.amazonaws.com']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS=['ec2-3-15-171-235.us-east-2.compute.amazonaws.com',
+                'ec2-3-19-67-177.us-east-2.compute.amazonaws.com',
+               'ec2-3-129-44-238.us-east-2.compute.amazonaws.com',
+               'ec2-3-139-59-71.us-east-2.compute.amazonaws.com',
+               'ec2-34-228-9-251.compute-1.amazonaws.com',
+               '127.0.0.1',]
 
 
 # Application definition
@@ -103,7 +107,7 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -145,3 +149,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
