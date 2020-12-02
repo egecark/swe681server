@@ -1,0 +1,3 @@
+[submodule "server/swe681client"]
+	path = server/swe681client
+	url = https://github.com/egecark/swe681client

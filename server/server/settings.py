@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,8 @@ SECRET_KEY = 'oj$_v33=xt1*ral-a&+2i38@qi&-pz6t1r=bk3b_uv+ns$o@ih'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['ec2-34-228-9-251.compute-1.amazonaws.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,9 +42,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-
     'account',
     'testing',
+    'game',
 ]
 
 MIDDLEWARE = [
@@ -70,7 +72,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
-    "http://127.0.0.1:9000"
+    "http://127.0.0.1:9000",
+    "http://ec2-34-228-9-251.compute-1.amazonaws.com:8000"
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -78,7 +81,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(os.getcwd(),'swe681client')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
