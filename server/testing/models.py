@@ -15,6 +15,8 @@ class GameState(models.Model):
     client_id2 = models.CharField(max_length=20)
     username1 = models.CharField(max_length=20)
     username2 = models.CharField(max_length=20)
+    score_1 = models.IntegerField(default=0)
+    score_2 = models.IntegerField(default=0)
     def __str__(self):
         return self.game_id
 

@@ -15,7 +15,7 @@ import os
 import time
 
 from scrabble import *
-
+import random
 import json
 
 @api_view(['GET'])
@@ -32,7 +32,18 @@ def dummy_view(request):
 @permission_classes([])
 def find_game(request):
 
-    request_data = json.loads(request.body)
+    print('find game request')
+
+    ##request_data = json.loads(request.body)
+
+    user_id = request.user
+
+    if user_id.is_anonymous:
+        print('non authenticated user attempted access')
+        return HttpResponse('you gotta authenticate')
+
+    print('user id!!!')
+    print(user_id)
 
     #check that request has client_id
 
@@ -45,16 +56,20 @@ def find_game(request):
     if request.method == 'GET':
         matches = Matchmaking.objects.first()
 
-        if matches.exists():
+        if matches:
 
             #size check for client ids (add regex)
             if len(matches.values('client_id')) > 20:
                 return False
-            if len(request_data['client_id']) > 20:
+            if len(user_id) > 20:
                 return False
 
             client_id1 = matches.values('client_id')
-            client_id2 = request_data['client_id']
+            client_id2 = user_id
+
+            #if client ids match then its that user's request so do nothing
+            if client_id1 == client_id2:
+                return HttpResponse('waiting_for_game')
 
             #size check for usernames (add regex)
             #if len(username1_from_server) > 20:
@@ -73,16 +88,36 @@ def find_game(request):
             #if other user joining, then make gamestate
 
             #find unused game_id from server
+
             #randomly choose who goes first
-            game_state = GameState.objects.create(game_id=-1, client_id1=client_id1, client_id2=client_id2, turn='needs_random_assigned', board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],['','2W','','','','3L','','','','3L','','','','2W',''],['','','2W','','','','2L','','2L','','','','2W','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','','','2W','','','','','','2W','','','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','2L','','','','2L','','2L','','','','2L','',''],['3W','','','2L','','','','X','','','','2L','','','3W'],['','','2L','','','','2L','','2L','','','','2L','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','','','2W','','','','','','2W','','','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','2W','','','','2L','','2L','','','','2W','',''],['','2W','','','','3L','','','','3L','','','','2W',''],['3W','','','2L','','','','3W','','','','2L','','','3W']])
+            random_turn = random.getrandbits(1)
+
+            if random_turn:
+                turn = username1
+            else:
+                turn = username2
+
+            #build and save new gamestate
+            game_state = GameState.objects.create()
+            game_state.game_id=-1
+            game_state.client_id1=client_id1
+            game_state.client_id2=client_id2
+            game_state.turn=turn
+            game_state.board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],['','2W','','','','3L','','','','3L','','','','2W',''],['','','2W','','','','2L','','2L','','','','2W','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','','','2W','','','','','','2W','','','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','2L','','','','2L','','2L','','','','2L','',''],['3W','','','2L','','','','X','','','','2L','','','3W'],['','','2L','','','','2L','','2L','','','','2L','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','','','2W','','','','','','2W','','','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','2W','','','','2L','','2L','','','','2W','',''],['','2W','','','','3L','','','','3L','','','','2W',''],['3W','','','2L','','','','3W','','','','2L','','','3W']]
+            game_state.save()
 
             serializer = GameStateSerializer(game_state, many=False)
+
+            #delete match request
+            matches.delete()
 
             return Response(serializer.data)
 
         #if no match waiting, make your own
         else:
-            match = Matchmaking.objects.create(matches.values('client_id'))
+            match = Matchmaking.objects.create()
+            match.client_id = user_id
+            match.save()
             serializer = MatchmakingSerializer(match, many=False)
 
             return Response(serializer.data)
@@ -127,13 +162,16 @@ def handle_input(request):
     if request.method == 'POST':
         request_data=json.loads(request.body)
 
+        #probably change to httpresponse saying please send data
         if not request_data:
             serializer = GameStateSerializer([])
             return Response(serializer.data)
 
         #regex the input
 
-        game_state = GameState.objects.all()
+        #doesn't filter for if a client has multiple games
+        #get game state with the requestor's client id
+        game_state = GameState.objects.filter(Q(client_id1=request_data.user.id) | Q(client_id2=request_data.user.id))
 
         word = request_data["word"]
         #sort the input word just in case
@@ -149,15 +187,23 @@ def handle_input(request):
 
 
         if not word_score:
-            serializer = GameStateSerializer(board)
+            serializer = GameStateSerializer(game_state)
         else:
-            serializer = GameStateSerializer(word_score)
-            update_board(word)
+            if game_state.client_id1 == request_data.user.id:
+                game_state.score1 += word_score
+            elif game_state.client_id2 == request_data.user.id:
+                game_state.score2 += word_score
+            else:
+                return HttpResponse('cannot find game')
+
+            print(board)
+            update_board(word, board) #need to make this function
+
+            serializer = GameStateSerializer(game_state)
 
 
         return Response(serializer.data)
 
 
 def index(request):
-    print('current directory')
     return render(request, 'index.html')
