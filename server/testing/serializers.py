@@ -15,4 +15,4 @@ class GameStateSerializer(serializers.HyperlinkedModelSerializer):
 class MatchmakingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Matchmaking
-        fields = ='id','client_id']
+        fields = ['id','client_id']
