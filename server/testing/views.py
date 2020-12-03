@@ -33,7 +33,7 @@ def dummy_view(request):
 
 #a find game request should include username/client_id which can be used to make a request if no available game request is found
 @api_view(['GET'])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def find_game(request):
 
     print('find game request')
