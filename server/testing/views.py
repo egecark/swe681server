@@ -10,6 +10,7 @@ from .models import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from random import randrange
 
 import os
 import time
@@ -26,6 +27,99 @@ def dummy_view(request):
     serializer = DummySerializer(dummy, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_available_matches(request):
+    matches = Matchmaking.objects.all()
+    serializer = MatchmakingSerializer(matches, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def host_game(request):
+    serializer = MatchmakingSerializer(data=request.data)
+    data = {}
+    if serializer.is_valid():
+        matchmaker = serializer.save(request.user)
+        data['id'] = matchmaker.id
+    else:
+        data = serializer.errors
+    return Response(data)
+
+
+def start_game(client1, client2, client3, client4):
+    # build and save new gamestate
+    game_state = GameState.objects.create(client1=client1, client2=client2, client3=client3, client4=client4)
+    player_num = 2
+    if client4 is not None:
+        player_num = 4
+    elif client3 is not None:
+        player_num = 3
+    turn = randrange(player_num + 1)
+    game_state.turn = turn
+    game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
+                        ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
+                        ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],
+                        ['2L', '', '', '2W', '', '', '', '2L', '', '', '', '2W', '', '', '2L'],
+                        ['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],
+                        ['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],
+                        ['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],
+                        ['3W', '', '', '2L', '', '', '', 'X', '', '', '', '2L', '', '', '3W'],
+                        ['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],
+                        ['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],
+                        ['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],
+                        ['2L', '', '', '2W', '', '', '', '2L', '', '', '', '2W', '', '', '2L'],
+                        ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],
+                        ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
+                        ['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W']]
+    game_state.save()
+
+    serializer = GameStateSerializer(game_state, many=False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_game(request, matchmaking_id):
+    user = request.user
+
+    matches = Matchmaking.objects.filter(pk = matchmaking_id)[0]
+
+    if matches:
+        if matches.client1 != user:
+            if matches.client2 is None:
+                matches.client2 = user
+                if matches.num_players == 2:
+                    response = start_game(matches.client1, matches.client2, None, None)
+                    matches.delete()
+                    return response
+
+            elif matches.client3 is None:
+                if matches.client2 == user:
+                    return HttpResponse("You're already in the game")
+
+                matches.client3 = user
+                if matches.num_players == 3:
+                    response = start_game(matches.client1, matches.client2, matches.client3, None)
+                    matches.delete()
+                    return response
+
+            elif matches.client4 is None:
+                if matches.client2 == user or matches.client3 == user:
+                    return HttpResponse("You're already in the game")
+
+                matches.client4 = user
+                if matches.num_players == 4:
+                    response = start_game(matches.client1, matches.client2, matches.client3, matches.client4)
+                    matches.delete()
+                    return response
+            matches.save()
+            serializer = MatchmakingSerializer(matches, many=False)
+            return Response(serializer.data)
+        else:
+            return HttpResponse("You're already in the game")
+    # if no match waiting, make your own
+    else:
+        return HttpResponse("No matches available")
 
 #a find game request should include username/client_id which can be used to make a request if no available game request is found
 @api_view(['GET'])

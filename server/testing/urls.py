@@ -7,6 +7,9 @@ app_name = 'testing'
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('dummy/', dummy_view, name="dummy"),
+    path('host/', host_game, name="host"),
+    path('matches/', get_available_matches, name="matches"),
+    path('join/<matchmaking_id>/', join_game, name="join"),
     path('game/', index, name="index"),
     path('game/turn', whose_turn_is_it, name="turn"),
     path('game/findgame', find_game, name="findgame"),
