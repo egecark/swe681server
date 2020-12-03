@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -10,6 +10,10 @@ from .models import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+
+from testing.registrationForm import RegistrationForm
 
 import os
 import time
@@ -207,3 +211,28 @@ def handle_input(request):
 
 def index(request):
     return render(request, 'game/index.html')
+
+def dashboard(request):
+    return render(request, "game/dashboard.html")
+
+def register(request):
+
+    if request.method == "GET":
+
+        return render(request, "registration/register.html", {"form": RegistrationForm})
+
+    elif request.method == "POST":
+
+        #form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
+
+        if form.is_valid():
+
+            user = form.save()
+
+            login(request, user)
+
+            return redirect("https://swe681project.com/dashboard/")
+
+        else:
+            return HttpResponse(form.is_valid())

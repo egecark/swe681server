@@ -7,10 +7,14 @@ app_name = 'testing'
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('dummy/', dummy_view, name="dummy"),
-    path('game/', index, name="index"),
+    path('accounts/', include("django.contrib.auth.urls")),
+    path('dashboard/', dashboard, name="dashboard"),
+    path('register/', register, name="register"),
+    path('game/', index, name="game"),
     path('game/turn', whose_turn_is_it, name="turn"),
     path('game/findgame', find_game, name="findgame"),
     path('game/input', handle_input, name="input"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
+
 
