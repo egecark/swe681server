@@ -86,7 +86,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.getcwd(),'swe681client')],
+        'DIRS': [os.path.join(Path(__file__).resolve().parent.parent,'swe681client')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
