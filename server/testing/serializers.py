@@ -15,7 +15,7 @@ class GameStateSerializer(serializers.ModelSerializer):
 class MatchmakingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Matchmaking
-        fields = ['num_players']
+        fields = ['id', 'client1', 'client2', 'client3', 'client4', 'num_players']
 
     def save(self, client):
         num_players = self.validated_data['num_players']
