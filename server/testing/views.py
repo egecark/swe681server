@@ -53,8 +53,11 @@ def start_game(client1, client2, client3, client4):
     player_num = 2
     if client4 is not None:
         player_num = 4
+        game_state.score_3 = 0
+        game_state.score_4 = 0
     elif client3 is not None:
         player_num = 3
+        game_state.score_3 = 0
     turn = randrange(player_num + 1)
     game_state.turn = turn
     game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
