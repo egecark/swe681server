@@ -9,6 +9,7 @@ urlpatterns = [
     path('dummy/', dummy_view, name="dummy"),
     path('host/', host_game, name="host"),
     path('matches/', get_available_matches, name="matches"),
+    path('join/', display_join_page, name="display_join_page"),
     path('join/<matchmaking_id>/', join_game, name="join"),
     path('game/', index, name="index"),
     path('game/turn', whose_turn_is_it, name="turn"),

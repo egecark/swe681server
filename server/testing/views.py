@@ -28,14 +28,14 @@ def dummy_view(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def get_available_matches(request):
     matches = Matchmaking.objects.all()
     serializer = MatchmakingSerializer(matches, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def host_game(request):
     serializer = MatchmakingSerializer(data=request.data)
     data = {}
@@ -80,8 +80,14 @@ def start_game(client1, client2, client3, client4):
     serializer = GameStateSerializer(game_state, many=False)
     return Response(serializer.data)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+@permission_classes([])
+def display_join_page(request):
+    return render(request, 'matchmaking/index.html/')
+
+
+api_view(['POST'])
+@permission_classes([])
 def join_game(request, matchmaking_id):
     user = request.user
 
@@ -230,8 +236,8 @@ def whose_turn_is_it(request):
         #request_data=json.loads(request.body)
 
         #fix so that it finds gamestate by game_id and only sends if client_id of requestor matches
-        game_state = GameState.objects.all()
-        if game_state.exists():
+        game_state = GameState.objects.first()
+        if game_state:
             serializer = GameStateSerializer(game_state, many=False)
 
 
