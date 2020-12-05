@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -8,8 +8,15 @@ from rest_framework.views import APIView
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.permissions import IsAuthenticated
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+
+from testing.registrationForm import RegistrationForm
+from testing.matchmakingForm import *
 from random import randrange
 
 import os
@@ -82,7 +89,7 @@ def start_game(client1, client2, client3, client4):
                         ['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],
                         ['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],
                         ['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],
-                        ['3W', '', '', '2L', '', '', '', 'X', '', '', '', '2L', '', '', '3W'],
+                        ['3W', '', '', '2L', '', '', '', '', '', '', '', '2L', '', '', '3W'],
                         ['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],
                         ['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],
                         ['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],
@@ -95,14 +102,23 @@ def start_game(client1, client2, client3, client4):
     serializer = GameStateSerializer(game_state, many=False)
     return Response(serializer.data)
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer, JSONRenderer])
+def display_join_page(request):
+    return render(request, 'matchmaking/matchmaking.html/', {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
+
+api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def join_game(request, matchmaking_id):
     user = request.user
 
-    matches = Matchmaking.objects.filter(pk = matchmaking_id)[0]
+    matches = Matchmaking.objects.filter(pk = matchmaking_id)
 
     if matches:
+        matches = matches[0]
+
         if matches.client1 != user:
             if matches.client2 is None:
                 matches.client2 = user
@@ -137,11 +153,11 @@ def join_game(request, matchmaking_id):
             return HttpResponse("You're already in the game")
     # if no match waiting, make your own
     else:
-        return HttpResponse("No matches available")
+        return HttpResponse("Invalid match id")
 
 #a find game request should include username/client_id which can be used to make a request if no available game request is found
 @api_view(['GET'])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def find_game(request):
 
     print('find game request')
@@ -238,21 +254,23 @@ def find_game(request):
 #function to control turn changes. responds to get request.
 #send score, board state
 @api_view(['GET'])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def whose_turn_is_it(request):
 
     if request.method == 'GET':
         #request_data=json.loads(request.body)
 
-        #fix so that it finds gamestate by game_id and only sends if client_id of requestor matches
-        game_state = GameState.objects.all()
-        if game_state.exists():
+        #Assumes a user can only be in 1 game
+        game_state = GameState.objects.filter(client1=request.user)
+        if game_state:
+            game_state = game_state[0]
             serializer = GameStateSerializer(game_state, many=False)
+            return Response(serializer.data)
 
 
         else:
             return HttpResponse('game_not_started')
-        return Response(serializer.data)
+
 
 #function to handle user input. Should:
     #check if its actually that user's turn
@@ -266,7 +284,7 @@ def whose_turn_is_it(request):
     #If not then send board state to revert to.
     #if good then send list of tiles that user should have
 @api_view(['POST'])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def handle_input(request):
 
     #get the user id and check if its their turn
@@ -319,3 +337,28 @@ def handle_input(request):
 
 def index(request):
     return render(request, 'game/index.html')
+
+def dashboard(request):
+    return render(request, "game/dashboard.html")
+
+def register(request):
+
+    if request.method == "GET":
+
+        return render(request, "registration/register.html", {"form": RegistrationForm})
+
+    elif request.method == "POST":
+
+        #form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
+
+        if form.is_valid():
+
+            user = form.save()
+
+            login(request, user)
+
+            return redirect("https://swe681project.com/dashboard/")
+
+        else:
+            return HttpResponse(form.is_valid())
