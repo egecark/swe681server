@@ -124,7 +124,7 @@ def display_join_page(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@renderer_classes([TemplateHTMLRenderer, JSONRenderer])
+#@renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def join_game(request, matchmaking_id):
     user = request.user
 
