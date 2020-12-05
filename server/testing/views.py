@@ -315,7 +315,12 @@ def handle_input(request):
 
         #doesn't filter for if a client has multiple games
         #get game state with the requestor's client id
-        game_state = GameState.objects.filter(Q(client_id1=request_data.user.id) | Q(client_id2=request_data.user.id))
+        game_state = GameState.objects.filter(Q(client_id1=request_data.user) | Q(client_id2=request_data.user) | Q(client_id3=request_data.user) | Q(client_id4=request_data.user))
+
+        if game_state:
+            game_state = game_state[0]
+        else:
+            return HttpResponse('cannot find game')
 
         word = request_data['word']
         #sort the input word just in case
@@ -326,28 +331,55 @@ def handle_input(request):
 
         board = getattr(game_state, 'board')
 
-        #calculate score function
-        word_score = calculate(word, board)
+        #is board a string or array here???
+
+        board = update_board(word, board)
+
+        #if false, invalid word entered
+        if not board:
+            return HttpResponse('Invalid word')
 
 
-        if not word_score:
+        #calculate score function (calculates score of move, returns score and list of connected words, returns False if move had multiple rows and columns [invalid])
+        word_score_with_connected_words = calculate(word, board)
+
+        valid_word = True
+
+        connected_words = False
+
+        #if false, then the input word was not in a straight line (multiple columns and rows)
+        if word_score_with_connected_words:
+            word_score = word_score_with_connected_words[0]
+            main_word = word_score_with_connected_words[1]
+            connected_words = word_score_with_connected_words[2]
+        else:
+            valid_word = False
+
+        #If no connected words found and its not the first turn, its an invalid move
+          ##check if turn is 0 indexed or 1
+        if not connected_words and game_state.turn:
+            valid_word = False
+
+        #check if words are valid scrabble words
+
+        if not valid_word:
             serializer = GameStateSerializer(game_state)
         else:
-            if game_state.client_id1 == request_data.user.id:
+            if game_state.client_id1 == request_data.user:
                 game_state.score1 += word_score
-            elif game_state.client_id2 == request_data.user.id:
+            elif game_state.client_id2 == request_data.user:
                 game_state.score2 += word_score
-            else:
-                return HttpResponse('cannot find game')
-
-            print(board)
-            update_board(word, board) #need to make this function
+            elif game_state.client_id3 == request_data.user:
+                game_state.score3 += word_score
+            elif game_state.client_id4 == request_data.user:
+                game_state.score4 += word_score
 
             serializer = GameStateSerializer(game_state)
 
 
         return Response(serializer.data)
 
+        #Response should actually redirect to same page and load the new board
 
 def index(request):
     return render(request, 'game/index.html')

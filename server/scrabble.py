@@ -12,6 +12,21 @@ points_map = dict(zip(letters, points))
 
 scrabble_values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", '','2L','2W','3L','3W']
 
+def update_board(word, board):
+    board = np.array(board)
+
+    for letter_with_index in word:
+        letter = letter_with_index[0]
+        row = letter_with_index[1]
+        col = letter_with_index[2]
+
+        #If valid letter already exists in place, can't put new letter there so return false
+        if board[row,col] in letters:
+            return False
+
+        board[row,col] = letter
+
+    return board
 
 #Find the whole word (horizontal) at the specified indices
 def find_word_in_row(input_word, board, input_row, input_col):
@@ -58,7 +73,7 @@ def find_word_in_col(input_word, board, input_row, input_col):
 
 #Calculate the score for a move (note: does not check if each word is a scrabble word, also expects the input to be validated beforehand by Django)
 #also probably expects word to come pre-sorted
-def calculate(input_word):
+def calculate(input_word, board):
     points = 0
     word_orientation = False
     word_score = 0
@@ -68,6 +83,8 @@ def calculate(input_word):
     double_words = np.array([])
 
     input_word = np.array(input_word)
+
+    connected_words = np.array([])
 
     #loop through input word. Mark multipliers and find connected words
     for letter_with_index in input_word:
@@ -103,7 +120,7 @@ def calculate(input_word):
     if len(np.unique(input_word[:,1])) > 1:
         word_orientation = 'vertical'
 
-    # if input has multiple cols, its probably a horizontal word
+    # if input has multiple cols, its probably a horizontal word, but if multiple cols and rows, its invalid so return False
     if len(np.unique(input_word[:,2])) > 1:
         if word_orientation == 'vertical':
             word_orientation = 'invalid'
@@ -113,8 +130,6 @@ def calculate(input_word):
 
     row = input_word[0,1]
     col = input_word[0,2]
-
-    connected_words = np.array()
 
     if word_orientation == 'horizontal':
         word = find_word_in_row(input_word, board, row, col)
@@ -181,7 +196,7 @@ def calculate(input_word):
         #add up points for move
         word_points += connected_word-points
 
-    return word_points
+    return word_points, word, connected_words
 
 
 

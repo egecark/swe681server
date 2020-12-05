@@ -29,8 +29,13 @@ class GameState(models.Model):
     letters2 = models.CharField(default=None, max_length=20)
     letters3 = models.CharField(null=True, default=None, max_length=20)
     letters4 = models.CharField(null=True, default=None, max_length=20)
+    move1 = models.CharField(null=True, default=None, max_length=7)
+    move2 = models.CharField(null=True, default=None, max_length=7)
+    move3 = models.CharField(null=True, default=None, max_length=7)
+    move4 = models.CharField(null=True, default=None, max_length=7)
     def __str__(self):
         return str(self.id)
+
 
 #created when a user is waiting for a game and deleted when game is found
 class Matchmaking(models.Model):
