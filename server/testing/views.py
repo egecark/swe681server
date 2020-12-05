@@ -54,7 +54,7 @@ def host_game(request):
     return Response(data)
 
 
-def start_game(client1, client2, client3, client4):
+def start_game(client1, client2, client3, client4, caller):
     # build and save new gamestate
     game_state = GameState.objects.create(client1=client1, client2=client2, client3=client3, client4=client4, bag=[], letters1=[], letters2=[])
     player_num = 2
@@ -82,6 +82,17 @@ def start_game(client1, client2, client3, client4):
             game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
         if player_num > 3:
             game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
+    player_letters = []
+    if caller == client1:
+        player_letters = game_state.letters1
+    elif caller == client2:
+        player_letters = game_state.letters2
+    elif caller == client3:
+        player_letters = game_state.letters3
+    elif caller == client4:
+        player_letters = game_state.letters4
+    else:
+        return HttpResponse("You cannot join this game!")
     game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
                         ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
                         ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],
@@ -100,7 +111,10 @@ def start_game(client1, client2, client3, client4):
     game_state.save()
 
     serializer = GameStateSerializer(game_state, many=False)
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['player_letters'] = player_letters
+
+    return response
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -123,7 +137,7 @@ def join_game(request, matchmaking_id):
             if matches.client2 is None:
                 matches.client2 = user
                 if matches.num_players == 2:
-                    response = start_game(matches.client1, matches.client2, None, None)
+                    response = start_game(matches.client1, matches.client2, None, None, user)
                     matches.delete()
                     return response
 
@@ -133,7 +147,7 @@ def join_game(request, matchmaking_id):
 
                 matches.client3 = user
                 if matches.num_players == 3:
-                    response = start_game(matches.client1, matches.client2, matches.client3, None)
+                    response = start_game(matches.client1, matches.client2, matches.client3, None, user)
                     matches.delete()
                     return response
 
@@ -143,7 +157,7 @@ def join_game(request, matchmaking_id):
 
                 matches.client4 = user
                 if matches.num_players == 4:
-                    response = start_game(matches.client1, matches.client2, matches.client3, matches.client4)
+                    response = start_game(matches.client1, matches.client2, matches.client3, matches.client4, user)
                     matches.delete()
                     return response
             matches.save()
