@@ -13,12 +13,10 @@ urlpatterns = [
     path('game/', index, name="game"),
     path('host/', host_game, name="host"),
     path('matches/', get_available_matches, name="matches"),
-    path('join/', display_join_page, name="display_join_page"),
-    path('join/<matchmaking_id>/', join_game, name="join"),
-    path('game/turn', whose_turn_is_it, name="turn"),
-    path('game/findgame', find_game, name="findgame"),
-    path('game/input', handle_input, name="input"),
+    path('join/', display_join_page, name="join"),
+    path('join/<matchmaking_id>/', join_game, name="join_id"),
+    path('game/turn/', whose_turn_is_it, name="turn"),
+    path('game/findgame/', find_game, name="findgame"),
+    path('game/input/', handle_input, name="input"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
-
-

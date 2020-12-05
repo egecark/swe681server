@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxValueValidator
 import uuid
+
 
 # Create your models here.
 class Dummy(models.Model):
@@ -32,10 +34,8 @@ class Matchmaking(models.Model):
     client2 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client2_match', default=None, null=True, on_delete=models.CASCADE)
     client3 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client3_match', default=None, null=True, on_delete=models.CASCADE)
     client4 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client4_match', default=None, null=True, on_delete=models.CASCADE)
-    num_players = models.PositiveIntegerField(default=0)
+    num_players = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(4),])
     def __str__(self):
         return str(self.id)
 
 #ToDo: add a model for tiles (the bag contents and each player's) with a matching game_id
-
-#GameState.objects.create(turn='game_not_started', board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],['','2W','','','','3L','','','','3L','','','','2W',''],['','','2W','','','','2L','','2L','','','','2W','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','','','2W','','','','','','2W','','','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','2L','','','','2L','','2L','','','','2L','',''],['3W','','','2L','','','','X','','','','2L','','','3W'],['','','2L','','','','2L','','2L','','','','2L','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','','','2W','','','','','','2W','','','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','2W','','','','2L','','2L','','','','2W','',''],['','2W','','','','3L','','','','3L','','','','2W',''],['3W','','','2L','','','','3W','','','','2L','','','3W']])
