@@ -110,13 +110,10 @@ def start_game(client1, client2, client3, client4, caller):
                         ['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W']]
     game_state.save()
 
-
-
     serializer = GameStateSerializer(game_state, many=False)
-    response = {'player_letters': player_letters}
-    response.update(serializer.data)
+    response = Response(serializer.data)
 
-    return Response(response)
+    return response
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
