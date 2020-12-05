@@ -49,17 +49,32 @@ def host_game(request):
 
 def start_game(client1, client2, client3, client4):
     # build and save new gamestate
-    game_state = GameState.objects.create(client1=client1, client2=client2, client3=client3, client4=client4)
+    game_state = GameState.objects.create(client1=client1, client2=client2, client3=client3, client4=client4, bag=[], letters1=[], letters2=[])
     player_num = 2
     if client4 is not None:
         player_num = 4
         game_state.score_3 = 0
         game_state.score_4 = 0
+        game_state.letters3 = []
+        game_state.letters4 = []
     elif client3 is not None:
         player_num = 3
         game_state.score_3 = 0
+        game_state.letters3 = []
     turn = randrange(player_num + 1)
     game_state.turn = turn
+    game_state.bag = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A',
+                      'I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N',
+                      'N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S',
+                      'S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F',
+                      'F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','blank','blank']
+    for i in range(7):
+        game_state.letters1.append(game_state.bag.pop(randrange(len(game_state.bag))))
+        game_state.letters2.append(game_state.bag.pop(randrange(len(game_state.bag))))
+        if player_num > 2:
+            game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
+        if player_num > 3:
+            game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
     game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
                         ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
                         ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],

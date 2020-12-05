@@ -22,6 +22,11 @@ class GameState(models.Model):
     score_2 = models.IntegerField(default=0)
     score_3 = models.IntegerField(null=True, default=None)
     score_4 = models.IntegerField(null=True, default=None)
+    bag = models.CharField(default=None, max_length=200)
+    letters1 = models.CharField(default=None, max_length=20)
+    letters2 = models.CharField(default=None, max_length=20)
+    letters3 = models.CharField(null=True, default=None, max_length=20)
+    letters4 = models.CharField(null=True, default=None, max_length=20)
     def __str__(self):
         return str(self.id)
 
