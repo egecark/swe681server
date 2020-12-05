@@ -122,7 +122,7 @@ def start_game(client1, client2, client3, client4, caller):
 def display_join_page(request):
     return render(request, 'matchmaking/matchmaking.html/', {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
-api_view(['POST'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def join_game(request, matchmaking_id):
