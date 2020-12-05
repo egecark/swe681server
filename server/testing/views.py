@@ -317,7 +317,7 @@ def handle_input(request):
         #get game state with the requestor's client id
         game_state = GameState.objects.filter(Q(client_id1=request_data.user.id) | Q(client_id2=request_data.user.id))
 
-        word = request_data["word"]
+        word = request_data['word']
         #sort the input word just in case
 
         #check for valid word position
