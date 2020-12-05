@@ -5,8 +5,12 @@ class GameForm(ModelForm):
     class Meta:
         model = models.GameState
 
+    def clean_input1(self):
+        input1 = self.cleaned_data["input1"]
 
-#not sure where to validate client 
+        #make sure row and col above 0 and below 4 and that all inputs are valid letters (regex)
+
+#not sure where to validate client
 #    def clean_client1(self):
 #        client1 = self.cleaned_data["client1"]
 #        try:
