@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -41,6 +42,13 @@ def get_available_matches(request):
     serializer = MatchmakingSerializer(matches, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_matches(request):
+    matches = Matchmaking.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+    serializer = MatchmakingSerializer(matches, many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def host_game(request):
@@ -52,7 +60,6 @@ def host_game(request):
     else:
         data = serializer.errors
     return Response(data)
-
 
 def start_game(client1, client2, client3, client4, caller):
     # build and save new gamestate
@@ -124,7 +131,6 @@ def display_join_page(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-#@renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def join_game(request, matchmaking_id):
     user = request.user
 
@@ -275,7 +281,7 @@ def whose_turn_is_it(request):
         #request_data=json.loads(request.body)
 
         #Assumes a user can only be in 1 game
-        game_state = GameState.objects.filter(client1=request.user)
+        game_state = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
         if game_state:
             game_state = game_state[0]
             serializer = GameStateSerializer(game_state, many=False)
@@ -315,7 +321,7 @@ def handle_input(request):
 
         #doesn't filter for if a client has multiple games
         #get game state with the requestor's client id
-        game_state = GameState.objects.filter(Q(client_id1=request_data.user) | Q(client_id2=request_data.user) | Q(client_id3=request_data.user) | Q(client_id4=request_data.user))
+        game_state = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
 
         if game_state:
             game_state = game_state[0]
