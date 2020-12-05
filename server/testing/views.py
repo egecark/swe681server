@@ -81,7 +81,7 @@ def start_game(client1, client2, client3, client4, caller):
                       'I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N',
                       'N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S',
                       'S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F',
-                      'F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','blank','blank']
+                      'F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z']
     for i in range(7):
         game_state.letters1.append(game_state.bag.pop(randrange(len(game_state.bag))))
         game_state.letters2.append(game_state.bag.pop(randrange(len(game_state.bag))))
@@ -89,17 +89,6 @@ def start_game(client1, client2, client3, client4, caller):
             game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
         if player_num > 3:
             game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
-    player_letters = []
-    if caller == client1:
-        player_letters = game_state.letters1
-    elif caller == client2:
-        player_letters = game_state.letters2
-    elif caller == client3:
-        player_letters = game_state.letters3
-    elif caller == client4:
-        player_letters = game_state.letters4
-    else:
-        return HttpResponse("You cannot join this game!")
     game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
                         ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
                         ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],
@@ -274,21 +263,34 @@ def find_game(request):
 #send score, board state
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def whose_turn_is_it(request):
+def whose_turn_is_it(request, game_id):
 
     if request.method == 'GET':
         #request_data=json.loads(request.body)
 
         #Assumes a user can only be in 1 game
-        game_state = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+        game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+                                              & Q(id=game_id))
         if game_state:
             game_state = game_state[0]
+            if request.user == game_state.client1:
+                player_letters = game_state.letters1
+            elif request.user == game_state.client2:
+                player_letters = game_state.letters2
+            elif request.user == game_state.client3:
+                player_letters = game_state.letters3
+            elif request.user == game_state.client4:
+                player_letters = game_state.letters4
+            else:
+                return HttpResponse("You are not in this game")
             serializer = GameStateSerializer(game_state, many=False)
-            return Response(serializer.data)
+            response = {'player_letters': player_letters}
+            response.update(serializer.data)
+            return Response(response)
 
 
         else:
-            return HttpResponse('game_not_started')
+            return HttpResponse("You are not in this game")
 
 
 #function to handle user input. Should:
