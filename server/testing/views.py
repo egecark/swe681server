@@ -119,7 +119,6 @@ def start_game(client1, client2, client3, client4, caller):
 
     serializer = GameStateSerializer(game_state, many=False)
     response = Response(serializer.data)
-    response['player_letters'] = player_letters
 
     return response
 
