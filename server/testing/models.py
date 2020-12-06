@@ -10,6 +10,12 @@ class Dummy(models.Model):
     def __str__(self):
         return self.value
 
+class Move(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    game = models.ForeignKey('GameState', on_delete=models.CASCADE)
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client', default=None, on_delete=models.CASCADE)
+    move = models.CharField(max_length=20)
+
 #Has the state of a game including the current board, whose turn it is, and player info
 class GameState(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
