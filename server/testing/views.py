@@ -49,6 +49,13 @@ def get_user_matches(request):
     serializer = MatchmakingSerializer(matches, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_games(request):
+    games = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+    serializer = GameStateSerializer(games, many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def host_game(request):
@@ -273,13 +280,13 @@ def whose_turn_is_it(request, game_id):
                                               & Q(id=game_id))
         if game_state:
             game_state = game_state[0]
-            if request.user == game_state.client1:
+            if request.user.id == game_state.client1:
                 player_letters = game_state.letters1
-            elif request.user == game_state.client2:
+            elif request.user.id == game_state.client2:
                 player_letters = game_state.letters2
-            elif request.user == game_state.client3:
+            elif request.user.id == game_state.client3:
                 player_letters = game_state.letters3
-            elif request.user == game_state.client4:
+            elif request.user.id == game_state.client4:
                 player_letters = game_state.letters4
             else:
                 return HttpResponse("You are not in this game")
@@ -389,6 +396,9 @@ def handle_input(request):
         #Response should actually redirect to same page and load the new board
 
 def index(request):
+    return render(request, 'game/index.html')
+
+def index_id(request, game_id):
     return render(request, 'game/index.html')
 
 def dashboard(request):
