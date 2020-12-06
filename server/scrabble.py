@@ -60,7 +60,8 @@ def parse_board(board_string):
     return board
 
 def parse_board2(board_string):
-    lst = board_string.split(', ')
+    lst = board_string.replace(' ', '')
+    lst = lst.split(',')
     lst = [s.replace('[', '') for s in lst]
     lst = [s.replace(']', '') for s in lst]
     lst = [s.replace('\'', '') for s in lst]
