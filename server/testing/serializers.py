@@ -7,6 +7,26 @@ class DummySerializer(serializers.ModelSerializer):
         model = Dummy
         fields = ['id','value']
 
+class WordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Word
+        fields = ['id','word']
+
+    def save(self):
+#        word = self.validated_data['word']
+#        id = self.validated_data['id']
+        word = self.word
+        id = self.id
+        wordModel = Word(id=id, word=word)
+#        if wordModel.full_clean():
+#            wordModel.save()
+#            return wordModel
+#        else:
+#            return False
+
+        wordModel.save()
+        return wordModel
+
 class GameStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameState

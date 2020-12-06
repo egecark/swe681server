@@ -20,6 +20,6 @@ urlpatterns = [
     path('join/<matchmaking_id>/', join_game, name="join_id"),
     path('game/turn/<game_id>/', whose_turn_is_it, name="turn"),
     path('game/findgame/', find_game, name="findgame"),
-    path('game/input/', handle_input, name="input"),
+    path('game/<game_id>/input/', handle_input, name="input"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

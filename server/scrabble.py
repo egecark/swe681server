@@ -12,13 +12,68 @@ points_map = dict(zip(letters, points))
 
 scrabble_values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", '','2L','2W','3L','3W']
 
-def update_board(word, board):
-    board = np.array(board)
+def parse_board(board_string):
+    board = np.full(shape=(15,15), fill_value=' ')
 
-    for letter_with_index in word:
-        letter = letter_with_index[0]
-        row = letter_with_index[1]
-        col = letter_with_index[2]
+    i = 0
+
+    row = 0
+    col = 0
+
+    if board_string[0] != '[' or board_string[-1] != ']':
+        return False
+
+
+    while(i < len(board_string) - 1):
+        i += 1
+
+        letter = board_string[i]
+
+        if letter == ',':
+            continue
+
+        elif letter == '[':
+            continue
+
+        elif letter == ']':
+            row += 1
+            col = 0
+            continue
+
+        elif letter == '\'':
+            if board_string[i+1] == '\'':
+                col += 1
+                i+=1
+                continue
+
+        elif letter == ' ':
+            continue
+
+        if letter == '3' or letter == '2':
+            board[row,col] = '' + letter + board_string[i+1]
+            i+=1
+        else:
+            board[row,col] = letter
+
+        col += 1
+
+    return board
+
+def update_board(input_word, board):
+    board = np.array(board.split(','))
+
+    word = np.array(input_word.split(','))
+    if word.size % 3 > 0:
+        return False
+
+    index = 0
+
+    while(index < word.size):
+        letter = word[index]
+        index += 1
+        row = int(word[index])
+        index += 1
+        col = int(word[index])
 
         #If valid letter already exists in place, can't put new letter there so return false
         if board[row,col] in letters:

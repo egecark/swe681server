@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -17,7 +18,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
 from testing.registrationForm import RegistrationForm
-from testing.matchmakingForm import *
+from testing.scrabbleForms import *
 from random import randrange
 
 import os
@@ -280,13 +281,13 @@ def whose_turn_is_it(request, game_id):
                                               & Q(id=game_id))
         if game_state:
             game_state = game_state[0]
-            if request.user.id == game_state.client1:
+            if request.user == game_state.client1:
                 player_letters = game_state.letters1
-            elif request.user.id == game_state.client2:
+            elif request.user == game_state.client2:
                 player_letters = game_state.letters2
-            elif request.user.id == game_state.client3:
+            elif request.user == game_state.client3:
                 player_letters = game_state.letters3
-            elif request.user.id == game_state.client4:
+            elif request.user == game_state.client4:
                 player_letters = game_state.letters4
             else:
                 return HttpResponse("You are not in this game")
@@ -294,7 +295,7 @@ def whose_turn_is_it(request, game_id):
             response = {'player_letters': player_letters}
             response.update(serializer.data)
             return Response(response)
-
+#            return Response(serializer.data)
 
         else:
             return HttpResponse("You are not in this game")
@@ -313,37 +314,52 @@ def whose_turn_is_it(request, game_id):
     #if good then send list of tiles that user should have
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def handle_input(request):
+def handle_input(request, game_id):
 
     #get the user id and check if its their turn
-
     if request.method == 'POST':
-        request_data=json.loads(request.body)
+#        serializer = WordSerializer(data=request.data)
+        #request_data=json.loads(request.data)
 
-        #probably change to httpresponse saying please send data
-        if not request_data:
-            serializer = GameStateSerializer([])
-            return Response(serializer.data)
+##        if serializer.is_valid():
+##            wordModel = serializer.save()
+##        else:
+##            return HttpResponse('Invalid Move')
 
-        #regex the input
+#        wordModel = serializer.save()
 
-        #doesn't filter for if a client has multiple games
+        data = request.data
+
+        form = WordForm(data)
+
+        if form.is_valid():
+            wordModel = form.save()
+        else:
+            return HttpResponse('error' + form.errors)
+
+
+        word = wordModel.word
+        game_id = wordModel.id
+
         #get game state with the requestor's client id
-        game_state = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+        game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id)) & Q(id=game_id))
 
         if game_state:
             game_state = game_state[0]
         else:
             return HttpResponse('cannot find game')
 
-        word = request_data['word']
         #sort the input word just in case
 
         #check for valid word position
 
         #check user's letters
 
-        board = getattr(game_state, 'board')
+        board = game_state.board
+
+        return HttpResponse(board)
+
+        board = parse_board(board)
 
         #is board a string or array here???
 
@@ -388,6 +404,11 @@ def handle_input(request):
             elif game_state.client_id4 == request_data.user:
                 game_state.score4 += word_score
 
+            game_state.turn += 1
+
+            if game_state.turn > game_state.num_players:
+                game_state.turn = game_state.turn % game_state.num_players + 1
+
             serializer = GameStateSerializer(game_state)
 
 
@@ -396,10 +417,10 @@ def handle_input(request):
         #Response should actually redirect to same page and load the new board
 
 def index(request):
-    return render(request, 'game/index.html')
+    return render(request, 'game/index.html', {"form":WordForm})
 
 def index_id(request, game_id):
-    return render(request, 'game/index.html')
+    return render(request, 'game/index.html', {"form":WordForm})
 
 def dashboard(request):
     return render(request, "game/dashboard.html")

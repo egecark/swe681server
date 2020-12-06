@@ -48,4 +48,10 @@ class Matchmaking(models.Model):
     def __str__(self):
         return str(self.id)
 
-#ToDo: add a model for tiles (the bag contents and each player's) with a matching game_id
+#Has the state of a game including the current board, whose turn it is, and player info
+class Word(models.Model):
+    id = models.UUIDField(primary_key=True)
+    word = models.CharField(max_length=7)
+    game_complete = models.BooleanField(default=False)
+    def __str__(self):
+        return str(self.id) + ' ' + str(self.word)
