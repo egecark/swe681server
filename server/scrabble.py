@@ -59,6 +59,13 @@ def parse_board(board_string):
 
     return board
 
+def parse_board2(board_string):
+    lst = board_string.split(', ')
+    lst = [s.replace('[', '') for s in lst]
+    lst = [s.replace(']', '') for s in lst]
+    lst = [s.replace('\'', '') for s in lst]
+    lst = np.reshape(lst, [15,15])
+    return lst
 def update_board(input_word, board):
     board = np.array(board.split(','))
 
