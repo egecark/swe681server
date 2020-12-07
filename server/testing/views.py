@@ -471,25 +471,25 @@ def handle_input(request, game_id):
             if game_state.client1 == request.user:
                 game_state.score_1 += word_score
                 for letter in letters_used:
-                    game_state.letters1.remove(letter)
+                    game_state.letters1.replace(letter,"",1)
                 for ind in range(len(letters_used)):
                     game_state.letters1.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client2 == request.user:
                 game_state.score_2 += word_score
                 for letter in letters_used:
-                    game_state.letters2.remove(letter)
+                    game_state.letters2.replace(letter, "", 1)
                 for ind in range(len(letters_used)):
                     game_state.letters2.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client3 == request.user:
                 game_state.score_3 += word_score
                 for letter in letters_used:
-                    game_state.letters3.remove(letter)
+                    game_state.letters3.replace(letter, "", 1)
                 for ind in range(len(letters_used)):
                     game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client4 == request.user:
                 game_state.score_4 += word_score
                 for letter in letters_used:
-                    game_state.letters4.remove(letter)
+                    game_state.letters4.replace(letter, "", 1)
                 for ind in range(len(letters_used)):
                     game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
 
