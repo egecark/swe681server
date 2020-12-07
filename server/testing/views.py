@@ -454,6 +454,7 @@ def handle_input(request, game_id):
 
         if not d.check(str(word)):
             valid_word = False
+            return HttpResponseBadRequest(str(word))
 
         for connected in connected_words:
             word = []
@@ -462,6 +463,7 @@ def handle_input(request, game_id):
                 word.append(letter)
             if not d.check(str(word)):
                 valid_word = False
+                return HttpResponseBadRequest("conn" + str(word))
 
         if not valid_word:
             serializer = GameStateSerializer(game_state)
