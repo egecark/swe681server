@@ -370,7 +370,7 @@ def handle_input(request, game_id):
         elif game_state.client4 == request.user:
             player_letters = game_state.letters4
 
-
+        player_letters = parse_player_letters(player_letters)
         test_word = word.split(',')
 
         valid_input = True
