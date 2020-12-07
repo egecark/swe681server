@@ -19,7 +19,7 @@ class Move(models.Model):
 #Has the state of a game including the current board, whose turn it is, and player info
 class GameState(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    turn = models.CharField(max_length=20, default='game_not_started')
+    turn = models.IntegerField(default=0)
     board = models.CharField(max_length=5000)
     start_time = models.DateTimeField(auto_now_add=True, verbose_name='start_time')
     client1 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client1_game', default=None, on_delete=models.CASCADE)

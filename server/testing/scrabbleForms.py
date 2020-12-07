@@ -4,7 +4,10 @@ from . import models
 from .models import *
 from django.utils.translation import ugettext as _
 
+word_regex = r'^(([A-Za-z](,([1-9]|[1][0-5])){2}),){0,6}[A-Za-z](,([1-9]|[1][0-5])){2}$'
+
 class WordForm(forms.Form):
+
 
     #This checks for a uuid, but not specific to a uuid4
     id = forms.RegexField(label=_("Game id"), max_length=36, regex=r'^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$',
@@ -13,7 +16,7 @@ class WordForm(forms.Form):
 
 
     #^[A-Za-z](,([1-9]|[1][0-5])){2}$
-    word = forms.RegexField(label=_("Input Word"), max_length=7, regex=r'.*',
+    word = forms.RegexField(label=_("Input Word"), max_length=56, regex=word_regex,
                             help_text = _("Input word of the form: letter-row-col"),
                             error_messages = {'invalid': _("Invalid move.")})
 
@@ -23,8 +26,9 @@ class WordForm(forms.Form):
 ##            raise forms.ValidationError(_("Invalid id."))
 #        return id
 #
-#    def clean_word(self):
-#        word = self.cleaned_data["word"]
+    def clean_word(self):
+        word = self.cleaned_data["word"]
+        return word.capitalize()
 ##        if condition:
 ##            raise forms.ValidationError(_("Invalid move."))
 

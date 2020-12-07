@@ -83,7 +83,7 @@ def start_game(client1, client2, client3, client4, caller):
         player_num = 3
         game_state.score_3 = 0
         game_state.letters3 = []
-    turn = randrange(player_num + 1)
+    turn = randrange(player_num) + 1
     game_state.turn = turn
     game_state.bag = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A',
                       'I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N',
@@ -335,11 +335,14 @@ def handle_input(request, game_id):
         if form.is_valid():
             wordModel = form.save()
         else:
-            return HttpResponse('error' + form.errors)
+            return HttpResponse(form.errors)
 
 
         word = wordModel.word
         game_id = wordModel.id
+
+        if not word or not game_id:
+            return HttpResponse('Invalid Move')
 
         #get game state with the requestor's client id
         game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id)) & Q(id=game_id))
@@ -349,6 +352,14 @@ def handle_input(request, game_id):
         else:
             return HttpResponse('cannot find game')
 
+        if game_state.client4:
+            num_players = 4
+        elif game_state.client3:
+            num_players = 3
+        else:
+            num_players = 2
+
+
         #sort the input word just in case
 
         #check for valid word position
@@ -357,21 +368,25 @@ def handle_input(request, game_id):
 
         board = game_state.board
 
-        return HttpResponse(board)
+        board, board_check = parse_board(board)
 
-        board = parse_board(board)
+        #if false, couldnt parse board
+        if not board_check:
+            return HttpResponse('Invalid word')
 
-        #is board a string or array here???
-
-        board = update_board(word, board)
+        board, board_check = update_board(word, board)
 
         #if false, invalid word entered
-        if not board:
+        if not board_check:
             return HttpResponse('Invalid word')
 
 
         #calculate score function (calculates score of move, returns score and list of connected words, returns False if move had multiple rows and columns [invalid])
         word_score_with_connected_words = calculate(word, board)
+
+        if not word_score_with_connected_words:
+            return HttpResponse('Invalid word')
+
 
         valid_word = True
 
@@ -385,30 +400,49 @@ def handle_input(request, game_id):
         else:
             valid_word = False
 
-        #If no connected words found and its not the first turn, its an invalid move
-          ##check if turn is 0 indexed or 1
-        if not connected_words and game_state.turn:
+        first_turn = True
+
+        if game_state.score_1 and game_state.score_2 and game_state.score_3 and game_state.score_4:
+            first_turn = False
+
+        #If no connected words found and its not the first move
+
+        if not connected_words and not first_turn:
             valid_word = False
+
+        return HttpResponse(connected_words)
 
         #check if words are valid scrabble words
 
         if not valid_word:
             serializer = GameStateSerializer(game_state)
+            return HttpResponse('not a valid move')
         else:
-            if game_state.client_id1 == request_data.user:
-                game_state.score1 += word_score
-            elif game_state.client_id2 == request_data.user:
-                game_state.score2 += word_score
-            elif game_state.client_id3 == request_data.user:
-                game_state.score3 += word_score
-            elif game_state.client_id4 == request_data.user:
-                game_state.score4 += word_score
+            if game_state.client1 == request.user:
+                game_state.score_1 += word_score
+            elif game_state.client2 == request.user:
+                game_state.score_2 += word_score
+            elif game_state.client3 == request.user:
+                game_state.score_3 += word_score
+            elif game_state.client4 == request.user:
+                game_state.score_4 += word_score
 
-            game_state.turn += 1
+            turn = int(game_state.turn)
 
-            if game_state.turn > game_state.num_players:
-                game_state.turn = game_state.turn % game_state.num_players + 1
 
+            turn = turn + 1
+
+            if turn > num_players:
+                if turn % num_players:
+                    turn = turn % num_players
+                else:
+                    turn = (turn % num_players) + num_players
+
+            game_state.turn = turn
+
+            game_state.board = str(board.tolist())
+
+            game_state.save()
             serializer = GameStateSerializer(game_state)
 
 

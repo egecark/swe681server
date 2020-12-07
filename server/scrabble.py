@@ -15,19 +15,21 @@ scrabble_values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "
 def parse_board(board_string):
     board = np.full(shape=(15,15), fill_value=' ')
 
+    board = board.astype('<U2')
+
     i = 0
 
     row = 0
     col = 0
 
     if board_string[0] != '[' or board_string[-1] != ']':
-        return False
+        return board, False
 
 
     while(i < len(board_string) - 1):
         i += 1
 
-        letter = board_string[i]
+        letter = board_string[i].capitalize()
 
         if letter == ',':
             continue
@@ -41,89 +43,105 @@ def parse_board(board_string):
             continue
 
         elif letter == '\'':
-            if board_string[i+1] == '\'':
+            if board_string[i+1] == '\'' or board_string[i+1] == ' ':
                 col += 1
                 i+=1
-                continue
+            continue
+
 
         elif letter == ' ':
             continue
 
         if letter == '3' or letter == '2':
-            board[row,col] = '' + letter + board_string[i+1]
+            temp = letter + board_string[i+1].capitalize()
+            board[row,col] = temp
             i+=1
         else:
             board[row,col] = letter
 
         col += 1
 
-    return board
+    return board, True
+
 
 def update_board(input_word, board):
-    board = np.array(board.split(','))
 
     word = np.array(input_word.split(','))
     if word.size % 3 > 0:
-        return False
+        return board, False
 
     index = 0
 
-    while(index < word.size):
+    while(index < word.size - 1):
         letter = word[index]
         index += 1
         row = int(word[index])
         index += 1
         col = int(word[index])
+        index += 1
 
         #If valid letter already exists in place, can't put new letter there so return false
         if board[row,col] in letters:
-            return False
+            return board, False
 
         board[row,col] = letter
 
-    return board
+    return board, True
 
 #Find the whole word (horizontal) at the specified indices
 def find_word_in_row(input_word, board, input_row, input_col):
+    row_word_indices = np.array([board[input_row,input_col],input_row,input_col]).reshape(1,3)
+
     #check for continuation of word after input
     for col in range(input_col + 1, 15):
-        letter = board[input_row,col]
+        letter = board[input_row,col].capitalize()
         if not letter in letters:
             break
 
-        row_word_indices = np.append(row_word_indices, [letter, input_row, col])
+        new_letter_index = np.array([letter, input_row, col]).reshape(1,3)
+
+        row_word_indices = np.append(row_word_indices, new_letter_index, 0)
 
     #check for continuation of word before input
-    for col in reverse(range(0, input_col - 1)):
-        letter = board[input_row,col]
+    for col in reversed(range(0, input_col)):
+        letter = board[input_row,col].capitalize()
         if not letter in letters:
             break
 
-        row_word_indices = np.append(row_word_indices, [letter, input_row, col])
+        new_letter_index = np.array([letter, input_row, col]).reshape(1,3)
 
-        #sort based on column of letter and return
-        return row_word_indices[row_word_indices[:,2].astype(np.int).argsort()]
+        row_word_indices = np.append(row_word_indices, new_letter_index, 0)
+
+
+    #sort based on column of letter and return
+    return row_word_indices[row_word_indices[:,2].astype(np.int).argsort()]
 
 #Find the whole word (vertical) at the specified indices
 def find_word_in_col(input_word, board, input_row, input_col):
+    col_word_indices = np.array([board[input_row,input_col],input_row,input_col]).reshape(1,3)
+
     #check for continuation of word after input
     for row in range(input_row + 1, 15):
-        letter = board[row,input_col]
+        letter = board[row,input_col].capitalize()
         if not letter in letters:
             break
 
-        col_word_indices = np.append(col_word_indices, [letter, row, input_col])
+        new_letter_index = np.array([letter, row, input_col]).reshape(1,3)
+
+        col_word_indices = np.append(col_word_indices, new_letter_index, 0)
 
     #check for continuation of word before input
-    for row in reverse(range(0, input_row - 1)):
-        letter = board[row,input_col]
+    for row in reversed(range(0, input_row)):
+        letter = board[row,input_col].capitalize()
         if not letter in letters:
             break
 
-        col_word_indices = np.append(col_word_indices, [letter, row, input_col])
+        new_letter_index = np.array([letter, row, input_col]).reshape(1,3)
 
-        #sort based on row of letter and return
-        return col_word_indices[col_word_indices[:,1].astype(np.int).argsort()]
+        col_word_indices = np.append(col_word_indices, new_letter_index, 0)
+
+    #sort based on row of letter and return
+    return col_word_indices[col_word_indices[:,1].astype(np.int).argsort()]
 
 
 #Calculate the score for a move (note: does not check if each word is a scrabble word, also expects the input to be validated beforehand by Django)
@@ -137,15 +155,18 @@ def calculate(input_word, board):
     triple_words = np.array([])
     double_words = np.array([])
 
-    input_word = np.array(input_word)
+    input_word = np.array(input_word.split(','))
+    num_words = input_word.size//3
+    input_word = np.reshape(input_word, (num_words,3))
 
     connected_words = np.array([])
 
+
     #loop through input word. Mark multipliers and find connected words
-    for letter_with_index in input_word:
+    for letter_with_index in list(input_word):
         letter = letter_with_index[0]
-        row = letter_with_index[1]
-        col = letter_with_index[2]
+        row = int(letter_with_index[1])
+        col = int(letter_with_index[2])
 
         index_pair = [row,col]
 
@@ -159,18 +180,6 @@ def calculate(input_word, board):
         elif index_pair in TRIPLE_WORD_SCORE:
             triple_words = np.append(triple_words, index_pair)
 
-        #find connected word along axis
-        if word_orientation == 'horizontal':
-            connected_word = find_word_in_col(input_word, board, row,col)
-        else:
-            connected_word = find_word_in_row(input_word, board, row,col)
-
-        #add connected word to list
-        if len(connected_word) > 1:
-            connected_words = np.append(connected_words, connected_word)
-
-
-
     # if input has multiple rows, its probably a vertical word
     if len(np.unique(input_word[:,1])) > 1:
         word_orientation = 'vertical'
@@ -179,42 +188,72 @@ def calculate(input_word, board):
     if len(np.unique(input_word[:,2])) > 1:
         if word_orientation == 'vertical':
             word_orientation = 'invalid'
-            return False #might need to do something to send response later
+            return False
         else:
             word_orientation = 'horizontal'
 
-    row = input_word[0,1]
-    col = input_word[0,2]
+    if word_orientation == 'invalid':
+        return False
 
+    row = int(input_word[0,1])
+    col = int(input_word[0,2])
+
+    #Find the full word in the row/column
     if word_orientation == 'horizontal':
         word = find_word_in_row(input_word, board, row, col)
     else:
         word = find_word_in_col(input_word, board, row, col)
-    if len(word) <= 1: #if word length is 1, then wrong direction was chosen
-        word_orientation = 'horizontal'
-        word = find_word_in_row(input_word, board, row, col)
 
+    if list(word):
+        if len(word) <= 1: #if word length is 1, then wrong direction was chosen
+            word_orientation = 'horizontal'
+            word = find_word_in_row(input_word, board, row, col)
+
+    else:
+        word = input_word
+
+    for letter_with_index in list(input_word):
+        letter = letter_with_index[0]
+        row = int(letter_with_index[1])
+        col = int(letter_with_index[2])
+        
+        #find connected word along axis
+        if word_orientation == 'horizontal':
+            connected_word = find_word_in_col(input_word, board, row,col)
+        else:
+            connected_word = find_word_in_row(input_word, board, row,col)
+
+        #add connected word to list
+        if list(connected_word):
+            if len(connected_word) > 1:
+                connected_words = np.append(connected_words, connected_word)
+
+
+    word_points = 0
 
     #add up sum of points for all letters in main word
     for letter_with_index in word:
 
         letter = letter_with_index[0]
-        row = letter_with_index[1]
-        col = letter_with_index[2]
+        row = int(letter_with_index[1])
+        col = int(letter_with_index[2])
         index_pair = [row,col]
 
-        letter_score = int(points_map[letter])
+        letter_score = int(points_map[letter.capitalize()])
 
-        if index_pair in triple_letters:
+        if index_pair in triple_letters.tolist() or index_pair == triple_letters.tolist():
             letter_score *= 3
-        elif index_pair in double_letters:
+        elif index_pair in double_letters.tolist() or index_pair == double_letters.tolist():
             letter_score *= 2
 
         word_points += letter_score
 
 
     #Multiply word modifiers to main word score
-    word_points *= 2**len(double_words) * 3**len(triple_words)
+    word_points *= 2**(double_words.size//2) * 3**(triple_words.size//2)
+
+#    if len(sh) == 2:
+#        connected_words = connected_words.reshape((1,sh[0],sh[1]))
 
     #Calculate score for connected words
     for conn_word in connected_words:
@@ -225,22 +264,22 @@ def calculate(input_word, board):
         #calculate score for individual word
         for val in conn_word:
             letter = val[0]
-            row = val[1]
-            col = val[2]
+            row = int(val[1])
+            col = int(val[2])
 
             index_pair = [row,col]
 
-            letter_score = int(points_map[letter])
+            letter_score = int(points_map[letter.capitalize()])
 
-            if index_pair in triple_letters:
+            if index_pair in triple_letters.tolist() or index_pair == triple_letters.tolist():
                 letter_score *= 3
-            elif index_pair in double_letters:
+            elif index_pair in double_letters.tolist() or index_pair == double_letters.tolist():
                 letter_score *= 2
 
 
-            if index_pair in triple_words:
+            if index_pair in triple_words.tolist() or index_pair == triple_words.tolist():
                 triple_multiplier *= 3
-            elif index_pair in double_words:
+            elif index_pair in double_words.tolist() or index_pair == double_words.tolist():
                 double_multiplier *= 2
 
             connected_word_points += letter_score
@@ -249,7 +288,7 @@ def calculate(input_word, board):
         connected_word_points *= triple_multiplier * double_multiplier
 
         #add up points for move
-        word_points += connected_word-points
+        word_points += connected_word_points
 
     return word_points, word, connected_words
 
