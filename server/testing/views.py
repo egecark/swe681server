@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.http import HttpResponse
 from .serializers import *
+from ..account.api.serializers import *
 from .models import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
@@ -457,7 +458,21 @@ def register(request):
 
     elif request.method == "POST":
 
-        #form = UserCreationForm(request.POST)
+        serializer = RegistrationSerializer(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            account = serializer.save()
+            data['response'] = 'successfully registered new user.'
+            data['email'] = account.email
+            data['username'] = account.username
+        else:
+            data = serializer.errors
+            #data['response'] = 'invalid login'
+        return Response(data)
+
+
+
+        """#form = UserCreationForm(request.POST)
         form = RegistrationForm(request.POST)
 
         if form.is_valid():
@@ -469,4 +484,4 @@ def register(request):
             return redirect("https://swe681project.com/dashboard/")
 
         else:
-            return HttpResponse(form.is_valid())
+            return HttpResponse(form.is_valid())"""
