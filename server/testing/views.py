@@ -1,12 +1,7 @@
 
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
-from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.http import HttpResponse
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
@@ -14,19 +9,14 @@ from rest_framework.decorators import api_view, permission_classes, renderer_cla
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.permissions import IsAuthenticated
 
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
 from testing.registrationForm import RegistrationForm
 from testing.scrabbleForms import *
 from random import randrange
-
-import os
 import time
 
-from scrabble import *
 import random
-import json
 
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
