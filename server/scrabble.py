@@ -13,7 +13,7 @@ points_map = dict(zip(letters, points))
 scrabble_values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", '','2L','2W','3L','3W']
 
 def parse_board(board_string):
-    board = np.full(shape=(15,15), fill_value=' ')
+    board = np.array([['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'], ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],['2L', '', '', '2W', '', '', '', '2L', '', '', '', '2W', '', '', '2L'],['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],['3W', '', '', '2L', '', '', '', '', '', '', '', '2L', '', '', '3W'],['', '', '2L', '', '', '', '2L', '', '2L', '', '', '', '2L', '', ''],['', '3L', '', '', '', '3L', '', '', '', '3L', '', '', '', '3L', ''],['', '', '', '', '2W', '', '', '', '', '', '2W', '', '', '', ''],['2L', '', '', '2W', '', '', '', '2L', '', '', '', '2W', '', '', '2L'],['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W']])
 
     board = board.astype('<U2')
 
@@ -64,14 +64,6 @@ def parse_board(board_string):
     return board, True
 
 
-def parse_board2(board_string):
-    lst = board_string.replace(' ', '')
-    lst = lst.split(',')
-    lst = [s.replace('[', '') for s in lst]
-    lst = [s.replace(']', '') for s in lst]
-    lst = [s.replace('\'', '') for s in lst]
-    lst = np.reshape(lst, [15,15])
-    return lst
 def update_board(input_word, board):
 
     word = np.array(input_word.split(','))
@@ -167,7 +159,7 @@ def calculate(input_word, board):
     num_words = input_word.size//3
     input_word = np.reshape(input_word, (num_words,3))
 
-    connected_words = np.array([])
+    connected_words = []
 
 
     #loop through input word. Mark multipliers and find connected words
@@ -234,7 +226,7 @@ def calculate(input_word, board):
         #add connected word to list
         if list(connected_word):
             if len(connected_word) > 1:
-                connected_words = np.append(connected_words, connected_word)
+                connected_words.append(connected_word)
 
 
     word_points = 0
@@ -259,9 +251,6 @@ def calculate(input_word, board):
 
     #Multiply word modifiers to main word score
     word_points *= 2**(double_words.size//2) * 3**(triple_words.size//2)
-
-#    if len(sh) == 2:
-#        connected_words = connected_words.reshape((1,sh[0],sh[1]))
 
     #Calculate score for connected words
     for conn_word in connected_words:
@@ -299,6 +288,4 @@ def calculate(input_word, board):
         word_points += connected_word_points
 
     return word_points, word, connected_words
-
-
 

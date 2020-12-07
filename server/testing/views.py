@@ -16,6 +16,8 @@ from testing.scrabbleForms import *
 from random import randrange
 import time
 
+from scrabble import *
+
 import random
 
 @api_view(['GET'])
@@ -400,8 +402,6 @@ def handle_input(request, game_id):
         if not connected_words and not first_turn:
             valid_word = False
 
-        return HttpResponse(connected_words)
-
         #check if words are valid scrabble words
 
         if not valid_word:
@@ -437,8 +437,6 @@ def handle_input(request, game_id):
 
 
         return Response(serializer.data)
-
-        #Response should actually redirect to same page and load the new board
 
 def index(request):
     return render(request, 'game/index.html', {"form":WordForm})
