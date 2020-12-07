@@ -1,30 +1,45 @@
 from rest_framework import serializers
 
 from ..models import Account
-
+import re
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
-	password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    class Meta:
+        model = Account
+        fields = ['email', 'username', 'password', 'password2']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
-	class Meta:
-		model = Account
-		fields = ['email', 'username', 'password', 'password2']
-		extra_kwargs = {
-				'password': {'write_only': True},
-		}
+    def is_valid(self, raise_exception=False):
+        account = Account(
+            email=self.validated_data['email'],
+            username=self.validated_data['username']
+        )
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
 
+        if not re.findall('^[a-zA-Z0-9!@-+]{6,}$', password):  # check if findall is right one
+            raise serializers.ValidationError(
+                _("The password must contain at least 6 characters, alphanumeric or !/@/-/+, ."),
+                code='password',
+            )
+        if password != password2:
+            raise serializers.ValidationError({'password': 'Passwords must match.'})
 
-	def	save(self):
+        return True
 
-		account = Account(
-					email=self.validated_data['email'],
-					username=self.validated_data['username']
-				)
-		password = self.validated_data['password']
-		password2 = self.validated_data['password2']
-		if password != password2:
-			raise serializers.ValidationError({'password': 'Passwords must match.'})
-		account.set_password(password)
-		account.save()
-		return account
+    def save(self):
+        account = Account(
+            email=self.validated_data['email'],
+            username=self.validated_data['username']
+        )
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
+        if password != password2:
+            raise serializers.ValidationError({'password': 'Passwords must match.'})
+        account.set_password(password)
+        account.save()
+        return account
