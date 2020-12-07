@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.http import HttpResponse
 from .serializers import *
-from ..account.api.serializers import *
+from server.account.api.serializers import *
 from .models import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
