@@ -374,7 +374,7 @@ def handle_input(request, game_id):
         test_word = word.split(',')
 
         valid_input = True
-
+        letters_used = []
         for i in range(len(test_word)):
             if i % 3 == 0: #should be a letter
                if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
@@ -383,6 +383,7 @@ def handle_input(request, game_id):
                elif not test_word[i].capitalize() in player_letters: #if not in the current player's letters
                    valid_input = False
 
+               letters_used.append(test_word[i].capitalize())
             if i % 3 == 1: #should be a number (row)
                if not test_word[i].isdigit(): #if its not an int
                    valid_input = False
@@ -454,7 +455,6 @@ def handle_input(request, game_id):
 
         if not d.check(str(word)):
             valid_word = False
-            return HttpResponseBadRequest(str(word))
 
         for connected in connected_words:
             word = ""
@@ -463,7 +463,6 @@ def handle_input(request, game_id):
                 word = word + letter
             if not d.check(str(word)):
                 valid_word = False
-                return HttpResponseBadRequest("conn" + str(word))
 
         if not valid_word:
             serializer = GameStateSerializer(game_state)
@@ -471,12 +470,28 @@ def handle_input(request, game_id):
         else:
             if game_state.client1 == request.user:
                 game_state.score_1 += word_score
+                for letter in letters_used:
+                    game_state.letters1.remove(letter)
+                for ind in range(len(letters_used)):
+                    game_state.letters1.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client2 == request.user:
                 game_state.score_2 += word_score
+                for letter in letters_used:
+                    game_state.letters2.remove(letter)
+                for ind in range(len(letters_used)):
+                    game_state.letters2.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client3 == request.user:
                 game_state.score_3 += word_score
+                for letter in letters_used:
+                    game_state.letters3.remove(letter)
+                for ind in range(len(letters_used)):
+                    game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
             elif game_state.client4 == request.user:
                 game_state.score_4 += word_score
+                for letter in letters_used:
+                    game_state.letters4.remove(letter)
+                for ind in range(len(letters_used)):
+                    game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
 
             turn = int(game_state.turn)
 
