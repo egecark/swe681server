@@ -447,20 +447,20 @@ def handle_input(request, game_id):
             valid_word = False
 
         #check if words are valid scrabble words
-        word = []
+        word = ""
         for row in main_word:
             letter = row[0]
-            word.append(letter)
+            word = word + letter
 
         if not d.check(str(word)):
             valid_word = False
             return HttpResponseBadRequest(str(word))
 
         for connected in connected_words:
-            word = []
+            word = ""
             for row in connected:
                 letter = row[0]
-                word.append(letter)
+                word = word + letter
             if not d.check(str(word)):
                 valid_word = False
                 return HttpResponseBadRequest("conn" + str(word))
