@@ -57,7 +57,7 @@ class Matchmaking(models.Model):
 #Has the state of a game including the current board, whose turn it is, and player info
 class Word(models.Model):
     id = models.UUIDField(primary_key=True)
-    word = models.CharField(max_length=7)
+    word = models.CharField(max_length=49)
     game_complete = models.BooleanField(default=False)
     def __str__(self):
         return str(self.id) + ' ' + str(self.word)

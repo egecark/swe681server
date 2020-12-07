@@ -339,6 +339,7 @@ def handle_input(request, game_id):
         #get game state with the requestor's client id
         game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id)) & Q(id=game_id))
 
+
         if game_state:
             game_state = game_state[0]
         else:
@@ -354,9 +355,51 @@ def handle_input(request, game_id):
 
         #sort the input word just in case
 
-        #check for valid word position
+        #check for valid word position (done in calculate function)
 
         #check user's letters
+        player_letters = ''
+
+        #Letter validation could be moved to the serializer/model???
+        if game_state.client1 == request.user:
+            player_letters = game_state.letters1
+        elif game_state.client2 == request.user:
+            player_letters = game_state.letters2
+        elif game_state.client3 == request.user:
+            player_letters = game_state.letters3
+        elif game_state.client4 == request.user:
+            player_letters = game_state.letters4
+
+
+        test_word = word.split(',')
+
+        valid_input = True
+
+        for i in range(len(test_word)):
+            if i % 3 == 0: #should be a letter
+               if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
+                   valid_input = False
+
+               elif not test_word[i].capitalize() in player_letters: #if not in the current player's letters
+                   valid_input = False
+
+            if i % 3 == 1: #should be a number (row)
+               if not test_word[i].isdigit(): #if its not an int
+                   valid_input = False
+
+               elif not int(test_word[i]) in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]: #if the index would not fit on the board
+                   valid_input = False
+
+            if i % 3 == 2: #should be a number (col)
+               if not test_word[i].isdigit(): #if its not an int
+                   valid_input = False
+
+               elif not int(test_word[i]) in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]: #if the index would not fit on the board
+                   valid_input = False
+
+
+        if not valid_input:
+            return HttpResponse('Invalid Move')
 
         board = game_state.board
 
