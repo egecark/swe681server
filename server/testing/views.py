@@ -1,7 +1,7 @@
 
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
@@ -15,7 +15,7 @@ from testing.registrationForm import RegistrationForm
 from testing.scrabbleForms import *
 from random import randrange
 import time
-
+import enchant
 from scrabble import *
 
 import random
@@ -418,6 +418,7 @@ def handle_input(request, game_id):
 
         #calculate score function (calculates score of move, returns score and list of connected words, returns False if move had multiple rows and columns [invalid])
         word_score_with_connected_words = calculate(word, board)
+        d = enchant.Dict("en_US")
 
         if not word_score_with_connected_words:
             return HttpResponse('Invalid word')
@@ -426,7 +427,7 @@ def handle_input(request, game_id):
         valid_word = True
 
         connected_words = False
-
+        main_word = []
         #if false, then the input word was not in a straight line (multiple columns and rows)
         if word_score_with_connected_words:
             word_score = word_score_with_connected_words[0]
@@ -446,10 +447,25 @@ def handle_input(request, game_id):
             valid_word = False
 
         #check if words are valid scrabble words
+        word = []
+        for row in main_word:
+            letter = row[0]
+            word.append(letter)
+
+        if not d.check(str(word)):
+            valid_word = False
+
+        for connected in connected_words:
+            word = []
+            for row in connected:
+                letter = row[0]
+                word.append(letter)
+            if not d.check(str(word)):
+                valid_word = False
 
         if not valid_word:
             serializer = GameStateSerializer(game_state)
-            return HttpResponse('not a valid move')
+            return HttpResponseBadRequest('not a valid move')
         else:
             if game_state.client1 == request.user:
                 game_state.score_1 += word_score
@@ -510,4 +526,4 @@ def register(request):
             return redirect("https://swe681project.com/dashboard/")
 
         else:
-            return HttpResponse(form.is_valid())
+            return HttpResponseBadRequest("The info that you supplied, does not meet our registration criteria.")
