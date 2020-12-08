@@ -45,7 +45,7 @@ class Account(AbstractBaseUser):
     last_login				= models.DateTimeField(verbose_name='last login', auto_now=True)
     win = models.IntegerField(default=0)
     lose = models.IntegerField(default=0)
-    last_time_hosted = models.DateTimeField(verbose_name='last_time_hosted', default=datetime.date(2019, 4, 13))
+    last_time_hosted = models.DateTimeField(verbose_name='last_time_hosted', blank=True)
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
