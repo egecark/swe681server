@@ -791,7 +791,7 @@ def handle_input(request):
                 game_state.turn = turn
 
                 game_state.board = str(board.tolist())
-
+                game_state.last_move = datetime.datetime.utcnow().replace(tzinfo=None)
                 game_state.save()
                 serializer = GameStateSerializer(game_state)
                 move = Move(game=game_state, client=request.user, move=test_word)
