@@ -712,7 +712,7 @@ def handle_input(request, game_id):
 
             #If no connected words found and its not the first move
             if not connected_words and not first_turn:
-                return HttpResponseBadRequest("qwer")
+                return HttpResponseBadRequest(word)
                 valid_word = False
 
             #check if words are valid scrabble words
