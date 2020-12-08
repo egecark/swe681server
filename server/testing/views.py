@@ -153,7 +153,7 @@ def display_join_page(request):
                   'matchmaking/matchmaking.html/',
                   {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
-@api_view
+@api_view(['GET'])
 @never_cache
 @permission_classes([IsAuthenticated])
 def get_moves(request):
@@ -164,6 +164,19 @@ def get_moves(request):
         response.update({'user_id': move.client})
         response.update({'username': move.client.username})
         response.update({'game_id': move.game})
+    return Response(response)
+
+@api_view(['GET'])
+@never_cache
+@permission_classes([IsAuthenticated])
+def get_user_statistics(request):
+    accounts = settings.AUTH_USER_MODEL.objects.all().order_by('username')
+    response = {}
+    for account in accounts:
+        response.update({'id': account.id})
+        response.update({'username': account.username})
+        response.update({'win': account.win})
+        response.update({'lose': account.lose})
     return Response(response)
 
 @api_view(['POST'])
@@ -729,7 +742,7 @@ def handle_input(request, game_id):
                 first_turn = False
 
             #If no connected words found and its not the first move
-            if not connected_words and not first_turn:
+            if not connected_words and not first_turn and main_word == word:
                 valid_word = False
 
             #check if words are valid scrabble words

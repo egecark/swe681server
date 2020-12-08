@@ -9,6 +9,7 @@ urlpatterns = [
     path('accounts/', include("django.contrib.auth.urls")),
     path('dashboard/', dashboard, name="dashboard"),
     path('moves/', get_moves, name="moves"),
+    path('statistics/', get_user_statistics, name="statistics"),
     path('register/', register, name="register"),
     path('game/', index, name="game"),
     path('game/<game_id>/', index_id, name="game_id"),
