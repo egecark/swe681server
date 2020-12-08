@@ -1,25 +1,26 @@
-
+import random
+import time
+import enchant
+from scrabble import *
+from testing.registrationForm import RegistrationForm
+from testing.scrabbleForms import *
 from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseBadRequest
-from .serializers import *
-from .models import *
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.cache import never_cache
-
 from django.contrib.auth import login
 
-from testing.registrationForm import RegistrationForm
-from testing.scrabbleForms import *
-from random import randrange
-import time
-import enchant
-from scrabble import *
+from .serializers import *
+from .models import *
 
-import random
+
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -33,7 +34,10 @@ def get_available_matches(request):
 @permission_classes([IsAuthenticated])
 @never_cache
 def get_user_matches(request):
-    matches = Matchmaking.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+    matches = Matchmaking.objects.filter(Q(client1=request.user.id) |
+                                         Q(client2=request.user.id) |
+                                         Q(client3=request.user.id) |
+                                         Q(client4=request.user.id))
     serializer = MatchmakingSerializer(matches, many=True)
     return Response(serializer.data)
 
@@ -41,7 +45,10 @@ def get_user_matches(request):
 @permission_classes([IsAuthenticated])
 @never_cache
 def get_user_games(request):
-    games = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+    games = GameState.objects.filter(Q(client1=request.user.id) |
+                                     Q(client2=request.user.id) |
+                                     Q(client3=request.user.id) |
+                                     Q(client4=request.user.id))
     serializer = GameStateSerializer(games, many=True)
     return Response(serializer.data)
 
@@ -60,7 +67,11 @@ def host_game(request):
 
 def start_game(client1, client2, client3, client4, caller):
     # build and save new gamestate
-    game_state = GameState.objects.create(client1=client1, client2=client2, client3=client3, client4=client4, bag=[], letters1=[], letters2=[])
+    game_state = GameState.objects.create(client1=client1,
+                                          client2=client2,
+                                          client3=client3,
+                                          client4=client4,
+                                          bag=[], letters1=[], letters2=[])
     player_num = 2
     if client4 is not None:
         player_num = 4
@@ -72,20 +83,37 @@ def start_game(client1, client2, client3, client4, caller):
         player_num = 3
         game_state.score_3 = 0
         game_state.letters3 = []
-    turn = randrange(player_num) + 1
+    turn = random.randrange(player_num) + 1
     game_state.turn = turn
-    game_state.bag = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A',
-                      'I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N',
-                      'N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S',
-                      'S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F',
-                      'F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z']
+    game_state.bag = ['E','E','E','E','E','E','E','E','E','E','E','E',
+                      'A','A','A','A','A','A','A','A','A',
+                      'I','I','I','I','I','I','I','I','I',
+                      'O','O','O','O','O','O','O','O',
+                      'N','N','N','N','N','N',
+                      'R','R','R','R','R','R',
+                      'T','T','T','T','T','T',
+                      'L','L','L','L',
+                      'S','S','S','S',
+                      'U','U','U','U',
+                      'D','D','D','D',
+                      'G','G','G',
+                      'B','B',
+                      'C','C',
+                      'M','M',
+                      'P','P',
+                      'F','F',
+                      'H','H',
+                      'V','V',
+                      'W','W',
+                      'Y','Y',
+                      'K','J','X','Q','Z']
     for i in range(7):
-        game_state.letters1.append(game_state.bag.pop(randrange(len(game_state.bag))))
-        game_state.letters2.append(game_state.bag.pop(randrange(len(game_state.bag))))
+        game_state.letters1.append(game_state.bag.pop(random.randrange(len(game_state.bag))))
+        game_state.letters2.append(game_state.bag.pop(random.randrange(len(game_state.bag))))
         if player_num > 2:
-            game_state.letters3.append(game_state.bag.pop(randrange(len(game_state.bag))))
+            game_state.letters3.append(game_state.bag.pop(random.randrange(len(game_state.bag))))
         if player_num > 3:
-            game_state.letters4.append(game_state.bag.pop(randrange(len(game_state.bag))))
+            game_state.letters4.append(game_state.bag.pop(random.randrange(len(game_state.bag))))
     game_state.board = [['3W', '', '', '2L', '', '', '', '3W', '', '', '', '2L', '', '', '3W'],
                         ['', '2W', '', '', '', '3L', '', '', '', '3L', '', '', '', '2W', ''],
                         ['', '', '2W', '', '', '', '2L', '', '2L', '', '', '', '2W', '', ''],
@@ -113,7 +141,9 @@ def start_game(client1, client2, client3, client4, caller):
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def display_join_page(request):
-    return render(request, 'matchmaking/matchmaking.html/', {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
+    return render(request,
+                  'matchmaking/matchmaking.html/',
+                  {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -130,7 +160,9 @@ def join_game(request, matchmaking_id):
             if matches.client2 is None:
                 matches.client2 = user
                 if matches.num_players == 2:
-                    response = start_game(matches.client1, matches.client2, None, None, user)
+                    response = start_game(matches.client1,
+                                          matches.client2,
+                                          None, None, user)
                     matches.delete()
                     return response
 
@@ -140,7 +172,10 @@ def join_game(request, matchmaking_id):
 
                 matches.client3 = user
                 if matches.num_players == 3:
-                    response = start_game(matches.client1, matches.client2, matches.client3, None, user)
+                    response = start_game(matches.client1,
+                                          matches.client2,
+                                          matches.client3,
+                                          None, user)
                     matches.delete()
                     return response
 
@@ -150,7 +185,11 @@ def join_game(request, matchmaking_id):
 
                 matches.client4 = user
                 if matches.num_players == 4:
-                    response = start_game(matches.client1, matches.client2, matches.client3, matches.client4, user)
+                    response = start_game(matches.client1,
+                                          matches.client2,
+                                          matches.client3,
+                                          matches.client4,
+                                          user)
                     matches.delete()
                     return response
             matches.save()
@@ -204,7 +243,8 @@ def find_game(request):
 
             current_time = time.time()
 
-            #send message to user from request and wait for a response saying they're joining (timeout)
+            #send message to user from request
+            #and wait for a response saying they're joining (timeout)
 
             #if other user joining, then make gamestate
 
@@ -224,7 +264,21 @@ def find_game(request):
             game_state.client_id1=client_id1
             game_state.client_id2=client_id2
             game_state.turn=turn
-            game_state.board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],['','2W','','','','3L','','','','3L','','','','2W',''],['','','2W','','','','2L','','2L','','','','2W','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','','','2W','','','','','','2W','','','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','2L','','','','2L','','2L','','','','2L','',''],['3W','','','2L','','','','X','','','','2L','','','3W'],['','','2L','','','','2L','','2L','','','','2L','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','','','2W','','','','','','2W','','','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','2W','','','','2L','','2L','','','','2W','',''],['','2W','','','','3L','','','','3L','','','','2W',''],['3W','','','2L','','','','3W','','','','2L','','','3W']]
+            game_state.board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],
+                                ['','2W','','','','3L','','','','3L','','','','2W',''],
+                                ['','','2W','','','','2L','','2L','','','','2W','',''],
+                                ['2L','','','2W','','','','2L','','','','2W','','','2L'],
+                                ['','','','','2W','','','','','','2W','','','',''],
+                                ['','3L','','','','3L','','','','3L','','','','3L',''],
+                                ['','','2L','','','','2L','','2L','','','','2L','',''],
+                                ['3W','','','2L','','','','X','','','','2L','','','3W'],
+                                ['','','2L','','','','2L','','2L','','','','2L','',''],
+                                ['','3L','','','','3L','','','','3L','','','','3L',''],
+                                ['','','','','2W','','','','','','2W','','','',''],
+                                ['2L','','','2W','','','','2L','','','','2W','','','2L'],
+                                ['','','2W','','','','2L','','2L','','','','2W','',''],
+                                ['','2W','','','','3L','','','','3L','','','','2W',''],
+                                ['3W','','','2L','','','','3W','','','','2L','','','3W']]
             game_state.save()
 
             serializer = GameStateSerializer(game_state, many=False)
@@ -255,7 +309,10 @@ def whose_turn_is_it(request, game_id):
         #request_data=json.loads(request.body)
 
         #Assumes a user can only be in 1 game
-        game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
+        game_state = GameState.objects.filter((Q(client1=request.user.id) |
+                                               Q(client2=request.user.id) |
+                                               Q(client3=request.user.id) |
+                                               Q(client4=request.user.id))
                                               & Q(id=game_id))
         if game_state:
             game_state = game_state[0]
@@ -308,11 +365,10 @@ def whose_turn_is_it(request, game_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @never_cache
-def handle_input(request, game_id):
+def handle_input(request):
 
     #get the user id and check if its their turn
     if request.method == 'POST':
-
         data = request.data
 
         form = WordForm(data)
@@ -330,7 +386,11 @@ def handle_input(request, game_id):
             return HttpResponse('Invalid Move')
 
         #get game state with the requestor's client id
-        game_state = GameState.objects.filter((Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id)) & Q(id=game_id))
+        game_state = GameState.objects.filter((Q(client1=request.user.id) |
+                                               Q(client2=request.user.id) |
+                                               Q(client3=request.user.id) |
+                                               Q(client4=request.user.id))
+                                              & Q(id=game_id))
 
 
         if game_state:
@@ -374,26 +434,29 @@ def handle_input(request, game_id):
         letters_used = []
         for i in range(len(test_word)):
             if i % 3 == 0: #should be a letter
-               if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
-                   valid_input = False
+                if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
+                    valid_input = False
 
-               elif not test_word[i].capitalize() in player_letters: #if not in the current player's letters
-                   valid_input = False
+                # if not in the current player's letters
+                elif not test_word[i].capitalize() in player_letters:
+                    valid_input = False
 
-               letters_used.append(test_word[i].capitalize())
+                letters_used.append(test_word[i].capitalize())
             if i % 3 == 1: #should be a number (row)
-               if not test_word[i].isdigit(): #if its not an int
-                   valid_input = False
+                if not test_word[i].isdigit(): #if its not an int
+                    valid_input = False
 
-               elif not int(test_word[i]) in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]: #if the index would not fit on the board
-                   valid_input = False
+                # if the index would not fit on the board
+                elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
+                    valid_input = False
 
             if i % 3 == 2: #should be a number (col)
-               if not test_word[i].isdigit(): #if its not an int
-                   valid_input = False
+                if not test_word[i].isdigit(): #if its not an int
+                    valid_input = False
 
-               elif not int(test_word[i]) in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]: #if the index would not fit on the board
-                   valid_input = False
+                # if the index would not fit on the board
+                elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
+                    valid_input = False
 
 
         if not valid_input:
@@ -414,7 +477,9 @@ def handle_input(request, game_id):
             return HttpResponse('Invalid word')
 
 
-        #calculate score function (calculates score of move, returns score and list of connected words, returns False if move had multiple rows and columns [invalid])
+        #calculate score function (calculates score of move,
+        #returns score and list of connected words,
+        #returns False if move had multiple rows and columns [invalid])
         word_score_with_connected_words = calculate(word, board)
         d = enchant.Dict("en_US")
 
@@ -470,7 +535,7 @@ def handle_input(request, game_id):
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
                     if bag:
-                        player_letters.append(bag.pop(randrange(len(bag))))
+                        player_letters.append(bag.pop(random.randrange(len(bag))))
                 game_state.letters1 = player_letters
                 game_state.bag = bag
             elif game_state.client2 == request.user:
@@ -479,7 +544,7 @@ def handle_input(request, game_id):
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
                     if bag:
-                        player_letters.append(bag.pop(randrange(len(bag))))
+                        player_letters.append(bag.pop(random.randrange(len(bag))))
                 game_state.letters2 = player_letters
                 game_state.bag = bag
             elif game_state.client3 == request.user:
@@ -488,7 +553,7 @@ def handle_input(request, game_id):
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
                     if bag:
-                        player_letters.append(bag.pop(randrange(len(bag))))
+                        player_letters.append(bag.pop(random.randrange(len(bag))))
                 game_state.letters3 = player_letters
                 game_state.bag = bag
             elif game_state.client4 == request.user:
@@ -497,7 +562,7 @@ def handle_input(request, game_id):
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
                     if bag:
-                        player_letters.append(bag.pop(randrange(len(bag))))
+                        player_letters.append(bag.pop(random.randrange(len(bag))))
                 game_state.letters4 = player_letters
                 game_state.bag = bag
 
@@ -564,5 +629,4 @@ def register(request):
 
             return redirect("https://swe681project.com/dashboard/")
 
-        else:
-            return HttpResponseBadRequest("The info that you supplied, does not meet our registration criteria.")
+        return HttpResponseBadRequest("The info that you supplied, does not meet our registration criteria.")
