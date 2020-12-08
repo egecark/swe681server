@@ -62,7 +62,19 @@ def get_user_games(request):
 def host_game(request):
     serializer = MatchmakingSerializer(data=request.data)
     data = {}
-    if (datetime.datetime.utcnow().replace(tzinfo=None) - request.user.last_time_hosted.replace(tzinfo=None)).total_seconds() > 30:
+    if request.user.last_time_hosted:
+        if (datetime.datetime.utcnow().replace(tzinfo=None) - request.user.last_time_hosted.replace(tzinfo=None)).total_seconds() > 30:
+            if serializer.is_valid():
+                request.user.last_time_hosted = datetime.datetime.utcnow()
+                request.user.save()
+                matchmaker = serializer.save(request.user)
+                data['id'] = matchmaker.id
+            else:
+                return Response('Invalid hosting specifications')
+            return Response(data)
+        else:
+            return HttpResponseBadRequest("You have to wait 30 seconds before hosting another game.")
+    else:
         if serializer.is_valid():
             request.user.last_time_hosted = datetime.datetime.utcnow()
             request.user.save()
@@ -71,8 +83,6 @@ def host_game(request):
         else:
             return Response('Invalid hosting specifications')
         return Response(data)
-    else:
-        return HttpResponseBadRequest("You have to wait 30 seconds before hosting another game.")
 
 def start_game(client1, client2, client3, client4, caller):
     # build and save new gamestate
