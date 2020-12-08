@@ -5,5 +5,5 @@ class NoCache:
 
     def __call__(self, request):
         response = self.get_response(request)
-        response['pragma'] = "no-cache"
+        response['Pragma'] = "no-cache"
         return response
