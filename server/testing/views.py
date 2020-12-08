@@ -361,7 +361,7 @@ def whose_turn_is_it(request, game_id):
 
                     game_state.active = False
                     game_state.save()
-                    return HttpResponse(time.time() - (game_state.last_move - datetime.datetime(1970,1,1)).total_seconds())
+                    return HttpResponse("Time out")
 
 
                 if request.user == game_state.client1:
