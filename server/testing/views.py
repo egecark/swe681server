@@ -703,6 +703,7 @@ def handle_input(request, game_id):
                 main_word = word_score_with_connected_words[1]
                 connected_words = word_score_with_connected_words[2]
             else:
+                return HttpResponseBadRequest(str(word) + " aaasssdddfff " + str(board))
                 valid_word = False
 
             first_turn = True
@@ -712,7 +713,7 @@ def handle_input(request, game_id):
 
             #If no connected words found and its not the first move
             if not connected_words and not first_turn:
-                return HttpResponseBadRequest(word_score_with_connected_words)
+                return HttpResponseBadRequest(str(word) + " qqqwwweeerrr " + str(board))
                 valid_word = False
 
             #check if words are valid scrabble words
