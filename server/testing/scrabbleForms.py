@@ -15,22 +15,21 @@ class WordForm(forms.Form):
                             error_messages = {'invalid': _("Invalid game id.")})
 
 
-    #^[A-Za-z](,([1-9]|[1][0-5])){2}$
     word = forms.RegexField(label=_("Input Word"), max_length=56, regex=word_regex,
                             help_text = _("Input word of the form: letter-row-col"),
                             error_messages = {'invalid': _("Invalid move.")})
 
-#    def clean_id(self):
-#        id = self.cleaned_data["id"]
-##        if condition:
-##            raise forms.ValidationError(_("Invalid id."))
-#        return id
-#
+    def clean_id(self):
+        id = self.cleaned_data["id"]
+
+        game = GameState.objects.filter(id=id)
+        if not game:
+            raise forms.ValidationError(_("Invalid id."))
+        return id
+
     def clean_word(self):
         word = self.cleaned_data["word"]
         return word.capitalize()
-##        if condition:
-##            raise forms.ValidationError(_("Invalid move."))
 
     def save(self):
         data = self.cleaned_data
@@ -67,5 +66,3 @@ class MatchMakingJoiningForm(forms.Form):
         except Matchmaking.DoesNotExist:
             raise forms.ValidationError(_("Cannot join requested match."))
         return id
-
-#not sure how we want to clean client ids yet

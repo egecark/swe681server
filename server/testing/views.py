@@ -21,14 +21,7 @@ from scrabble import *
 import random
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
-@permission_classes([])
-def dummy_view(request):
-    dummy = Dummy.objects.all().order_by('value')
-    serializer = DummySerializer(dummy, many=True)
-    return Response(serializer.data)
-
-@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def get_available_matches(request):
     matches = Matchmaking.objects.all()
@@ -58,7 +51,7 @@ def host_game(request):
         matchmaker = serializer.save(request.user)
         data['id'] = matchmaker.id
     else:
-        data = serializer.errors
+        return Response('Invalid hosting specifications')
     return Response(data)
 
 def start_game(client1, client2, client3, client4, caller):
@@ -163,31 +156,16 @@ def join_game(request, matchmaking_id):
     else:
         return HttpResponse("Invalid match id")
 
-#a find game request should include username/client_id which can be used to make a request if no available game request is found
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def find_game(request):
 
-    print('find game request')
-
-    ##request_data = json.loads(request.body)
-
     user_id = request.user
 
     if user_id.is_anonymous:
-        print('non authenticated user attempted access')
         return HttpResponse('you gotta authenticate')
 
-    print('user id!!!')
-    print(user_id)
-
     #check that request has client_id
-
-    ##GameState.objects.create(game_id='1', turn='user1', board = [['3W','','','2L','','','','3W','','','','2L','','','3W'],['','2W','','','','3L','','','','3L','','','','2W',''],['','','2W','','','','2L','','2L','','','','2W','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','','','2W','','','','','','2W','','','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','2L','','','','2L','','2L','','','','2L','',''],['3W','','','2L','','','','X','','','','2L','','','3W'],['','','2L','','','','2L','','2L','','','','2L','',''],['','3L','','','','3L','','','','3L','','','','3L',''],['','','','','2W','','','','','','2W','','','',''],['2L','','','2W','','','','2L','','','','2W','','','2L'],['','','2W','','','','2L','','2L','','','','2W','',''],['','2W','','','','3L','','','','3L','','','','2W',''],['3W','','','2L','','','','3W','','','','2L','','','3W']])
-
-    ##serializer = GameStateSerializer(GameState.objects.filter()[:1].get(), many=False)
-
-    ##return Response(serializer.data)
 
     if request.method == 'GET':
         matches = Matchmaking.objects.first()
@@ -307,38 +285,24 @@ def whose_turn_is_it(request, game_id):
             response = {'player_letters': player_letters}
             response.update(serializer.data)
             return Response(response)
-#            return Response(serializer.data)
 
         else:
             return HttpResponse("You are not in this game")
 
 
-#function to handle user input. Should:
+#function to handle user input. checks:
     #check if its actually that user's turn
     #check if that input is valid (regex)
     #check if its sorted (if not then sort here)
     #check if valid word position
     #check if user actually had all those letters
-    #calculate score function
-        #calculate score function should check that all words are valid scrabble words
-#return serialized response telling if valid move.
-    #If not then send board state to revert to.
-    #if good then send list of tiles that user should have
+    #checks that all words involved are valid words
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_input(request, game_id):
 
     #get the user id and check if its their turn
     if request.method == 'POST':
-#        serializer = WordSerializer(data=request.data)
-        #request_data=json.loads(request.data)
-
-##        if serializer.is_valid():
-##            wordModel = serializer.save()
-##        else:
-##            return HttpResponse('Invalid Move')
-
-#        wordModel = serializer.save()
 
         data = request.data
 
@@ -347,7 +311,7 @@ def handle_input(request, game_id):
         if form.is_valid():
             wordModel = form.save()
         else:
-            return HttpResponse(form.errors)
+            return HttpResponse('Invalid Move')
 
 
         word = wordModel.word
@@ -363,7 +327,7 @@ def handle_input(request, game_id):
         if game_state:
             game_state = game_state[0]
         else:
-            return HttpResponse('cannot find game')
+            return HttpResponse('Invalid Move')
 
         if game_state.client4:
             num_players = 4
@@ -373,21 +337,24 @@ def handle_input(request, game_id):
             num_players = 2
 
 
-        #sort the input word just in case
-
-        #check for valid word position (done in calculate function)
-
         #check user's letters
         player_letters = ''
 
-        #Letter validation could be moved to the serializer/model???
         if game_state.client1 == request.user:
+            if int(game_state.turn) != 1:
+                return Response('Invalid Move')
             player_letters = game_state.letters1
         elif game_state.client2 == request.user:
+            if int(game_state.turn) != 2:
+                return Response('Invalid Move')
             player_letters = game_state.letters2
         elif game_state.client3 == request.user:
+            if int(game_state.turn) != 3:
+                return Response('Invalid Move')
             player_letters = game_state.letters3
         elif game_state.client4 == request.user:
+            if int(game_state.turn) != 4:
+                return Response('Invalid Move')
             player_letters = game_state.letters4
 
         player_letters = parse_string_array(player_letters)
@@ -464,7 +431,6 @@ def handle_input(request, game_id):
             first_turn = False
 
         #If no connected words found and its not the first move
-
         if not connected_words and not first_turn:
             valid_word = False
 
@@ -549,15 +515,23 @@ def handle_input(request, game_id):
 
         return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def index(request):
     return render(request, 'game/index.html', {"form":WordForm})
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def index_id(request, game_id):
     return render(request, 'game/index.html', {"form":WordForm})
 
+@api_view(['GET'])
+@permission_classes([])
 def dashboard(request):
     return render(request, "game/dashboard.html")
 
+@api_view(['GET', 'POST'])
+@permission_classes([])
 def register(request):
 
     if request.method == "GET":

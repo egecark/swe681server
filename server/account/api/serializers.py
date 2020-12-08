@@ -21,7 +21,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
 
-        if not re.findall('^[a-zA-Z0-9!@-+]{6,}$', password):  # check if findall is right one
+        if not re.findall('^[a-zA-Z0-9!@-+]{6,}$', password):
             raise serializers.ValidationError(
                 _("The password must contain at least 6 characters, alphanumeric or !/@/-/+, ."),
                 code='password',

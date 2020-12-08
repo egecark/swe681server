@@ -6,7 +6,6 @@ app_name = 'testing'
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('dummy/', dummy_view, name="dummy"),
     path('accounts/', include("django.contrib.auth.urls")),
     path('dashboard/', dashboard, name="dashboard"),
     path('register/', register, name="register"),
