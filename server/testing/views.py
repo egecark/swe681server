@@ -687,6 +687,7 @@ def handle_input(request, game_id):
             #returns score and list of connected words,
             #returns False if move had multiple rows and columns [invalid])
             word_score_with_connected_words = calculate(word, board)
+            return HttpResponse(calculate(word, board))
             d = enchant.Dict("en_US")
 
             if not word_score_with_connected_words:
@@ -703,7 +704,6 @@ def handle_input(request, game_id):
                 main_word = word_score_with_connected_words[1]
                 connected_words = word_score_with_connected_words[2]
             else:
-                return HttpResponseBadRequest(str(word) + " aaasssdddfff " + str(board))
                 valid_word = False
 
             first_turn = True
@@ -713,7 +713,6 @@ def handle_input(request, game_id):
 
             #If no connected words found and its not the first move
             if not connected_words and not first_turn:
-                return HttpResponseBadRequest(str(word) + " qqqwwweeerrr " + str(board))
                 valid_word = False
 
             #check if words are valid scrabble words
@@ -723,7 +722,6 @@ def handle_input(request, game_id):
                 word = word + letter.capitalize()
 
             if not d.check(str(word)):
-                return HttpResponseBadRequest("asdf" + str(word))
                 valid_word = False
 
             for connected in connected_words:
@@ -732,7 +730,6 @@ def handle_input(request, game_id):
                     letter = row[0]
                     word = word + letter.capitalize()
                 if not d.check(str(word)):
-                    return HttpResponseBadRequest("sssss" + str(word))
                     valid_word = False
 
             if not valid_word:
