@@ -357,6 +357,7 @@ def whose_turn_is_it(request, game_id):
 
                     elif game_state.turn == 3:
                         game_state.client3.lose = game_state.client3.lose + 1
+                        game_state.client3.save()
                         game_state.client1.win = game_state.client1.win + 1
                         game_state.client1.save()
 
@@ -395,22 +396,93 @@ def whose_turn_is_it(request, game_id):
                 else:
                     return HttpResponse("You are not in this game")
 
-                bag_empty = False
                 game_over = False
 
                 bag = game_state.bag
 
-                if (not game_state.letters1) or (not game_state.letters2) or (not len(bag)):
+                #if a player is out of letters and the bag is empty, game ends
+                if ((not game_state.letters1) or (not game_state.letters2)) and (not len(bag)):
                     game_over = True
                 elif game_state.client3:
-                    if not game_state.letters3:
+                    if not game_state.letters3 and (not len(bag)):
                         game_over = True
                 elif game_state.client4:
-                    if not game_state.letters4:
+                    if not game_state.letters4 and (not len(bag)):
                         game_over = True
 
                 if game_over:
                     game_state.active = False
+                    score1 = game_state.score1
+                    score2 = game_state.score2
+                    score3 = 0
+                    score4 = 0
+                    if game_state.client3:
+                        score3 = game_state.score3
+                    if game_state.client4:
+                        score4 = game_state.score4
+
+                    winner = 1
+
+                    if score1 < score2:
+                        winner = 2
+                    if score2 < score3:
+                        winner = 3
+                    if score3 < score4:
+                        winner = 4
+
+                    if winner == 1:
+                        game_state.client1.win = game_state.client1.win + 1
+                        game_state.client1.save()
+                        game_state.client2.lose = game_state.client2.lose + 1
+                        game_state.client2.save()
+
+                        if game_state.client3:
+                            game_state.client3.lose = game_state.client3.lose + 1
+                            game_state.client3.save()
+                        if game_state.client4:
+                            game_state.client4.lose = game_state.client4.lose + 1
+                            game_state.client4.save()
+
+                    elif winner == 2:
+                        game_state.client2.win = game_state.client2.win + 1
+                        game_state.client2.save()
+
+                        game_state.client1.lose = game_state.client1.lose + 1
+                        game_state.client1.save()
+
+                        if game_state.client3:
+                            game_state.client3.lose = game_state.client3.lose + 1
+                            game_state.client3.save()
+                        if game_state.client4:
+                            game_state.client4.lose = game_state.client4.lose + 1
+                            game_state.client4.save()
+
+                    elif winner == 3:
+                        game_state.client3.win = game_state.client3.win + 1
+                        game_state.client3.save()
+                        game_state.client1.lose = game_state.client1.lose + 1
+                        game_state.client1.save()
+
+                        game_state.client2.lose = game_state.client2.lose + 1
+                        game_state.client2.save()
+                        if game_state.client4:
+                            game_state.client4.lose = game_state.client4.lose + 1
+                            game_state.client4.save()
+
+                    elif winner == 4:
+                        game_state.client4.win = game_state.client4.win + 1
+                        game_state.client4.save()
+
+                        game_state.client1.lose = game_state.client1.lose + 1
+                        game_state.client1.save()
+
+                        game_state.client2.lose = game_state.client2.lose + 1
+                        game_state.client2.save()
+
+                        game_state.client3.lose = game_state.client3.lose + 1
+                        game_state.client3.save()
+
+
                     game_state.save()
                     return HttpResponse('Game over')
 
@@ -635,7 +707,7 @@ def handle_input(request, game_id):
 
             first_turn = True
 
-            if game_state.score_1 and game_state.score_2 and game_state.score_3 and game_state.score_4:
+            if game_state.score_1 or game_state.score_2 or game_state.score_3 or game_state.score_4:
                 first_turn = False
 
             #If no connected words found and its not the first move
@@ -670,6 +742,7 @@ def handle_input(request, game_id):
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
+                    player_letters = [i for i in player_letters if i] #remove any empty strings
                     game_state.letters1 = player_letters
                     game_state.bag = bag
                 elif game_state.client2 == request.user:
@@ -679,6 +752,7 @@ def handle_input(request, game_id):
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
+                    player_letters = [i for i in player_letters if i] #remove any empty strings
                     game_state.letters2 = player_letters
                     game_state.bag = bag
                 elif game_state.client3 == request.user:
@@ -688,6 +762,7 @@ def handle_input(request, game_id):
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
+                    player_letters = [i for i in player_letters if i] #remove any empty strings
                     game_state.letters3 = player_letters
                     game_state.bag = bag
                 elif game_state.client4 == request.user:
@@ -697,6 +772,7 @@ def handle_input(request, game_id):
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
+                    player_letters = [i for i in player_letters if i] #remove any empty strings
                     game_state.letters4 = player_letters
                     game_state.bag = bag
 
