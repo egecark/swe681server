@@ -322,7 +322,7 @@ def whose_turn_is_it(request, game_id):
 
             if game_state.active:
 
-                if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 20:
+                if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 15:
                     moves = Move.objects.filter(Q(game=game_state))
                     if moves:
                         for move in moves:
@@ -338,7 +338,7 @@ def whose_turn_is_it(request, game_id):
                             game_state.client4.win = game_state.client4.win + 1
 
                     elif game_state.turn == 2:
-                        game_state.client2.lose = game_state.client1.lose + 1
+                        game_state.client2.lose = game_state.client2.lose + 1
                         game_state.client1.win = game_state.client1.win + 1
 
                         if game_state.client3:
@@ -347,21 +347,21 @@ def whose_turn_is_it(request, game_id):
                             game_state.client4.win = game_state.client4.win + 1
 
                     elif game_state.turn == 3:
-                        game_state.client3.lose = game_state.client1.lose + 1
+                        game_state.client3.lose = game_state.client3.lose + 1
                         game_state.client1.win = game_state.client1.win + 1
                         game_state.client2.win = game_state.client2.win + 1
                         if game_state.client4:
                             game_state.client4.win = game_state.client4.win + 1
 
                     elif game_state.turn == 4:
-                        game_state.client4.lose = game_state.client1.lose + 1
+                        game_state.client4.lose = game_state.client4.lose + 1
                         game_state.client1.win = game_state.client1.win + 1
                         game_state.client2.win = game_state.client2.win + 1
                         game_state.client3.win = game_state.client3.win + 1
 
                     game_state.active = False
                     game_state.save()
-                    return HttpResponse("Time out")
+                    return HttpResponseBadRequest("Time out")
 
 
                 if request.user == game_state.client1:
