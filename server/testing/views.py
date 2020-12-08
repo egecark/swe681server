@@ -319,7 +319,7 @@ def whose_turn_is_it(request, game_id):
         if game_state:
             game_state = game_state[0]
 
-            if (time.time() - float(game_state.last_move)) > 20:
+            if (time.time() - game_state.last_move.time()) > 20:
                 moves = Move.objects.filter(Q(game=game_state))
                 if moves:
                     for move in moves:
