@@ -19,8 +19,9 @@ from django.contrib.auth import login
 
 from .serializers import *
 from .models import *
+from django.apps import apps
 
-
+Accounts = apps.get_model('account', 'Account')
 
 
 
@@ -170,13 +171,13 @@ def get_moves(request):
 @never_cache
 @permission_classes([IsAuthenticated])
 def get_user_statistics(request):
-    accounts = settings.AUTH_USER_MODEL.objects.all().order_by('username')
+    accounts = Accounts.objects.all() #.order_by('username')
     response = {}
     for account in accounts:
-        response.update({'id': account.id})
-        response.update({'username': account.username})
-        response.update({'win': account.win})
-        response.update({'lose': account.lose})
+        response.update({str(account.id): {'username': account.username, 'win': account.win, 'lose': account.lose}})
+#        response.update({'username': account.username})
+#        response.update({'win': account.win})
+#        response.update({'lose': account.lose})
     return Response(response)
 
 @api_view(['POST'])
