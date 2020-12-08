@@ -322,7 +322,7 @@ def whose_turn_is_it(request, game_id):
 
             if game_state.active:
 
-                if (datetime.datetime.utcnow() - game_state.last_move.replace(tzinfo=None)).total_seconds() > 20:
+                if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 20:
                     moves = Move.objects.filter(Q(game=game_state))
                     if moves:
                         for move in moves:
