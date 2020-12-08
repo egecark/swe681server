@@ -16,11 +16,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/testing/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="167" column="34" lean-forward="false" selection-start-line="167" selection-start-column="28" selection-end-line="167" selection-end-column="34" />
+            <state relative-caret-position="205">
+              <caret line="49" column="29" lean-forward="false" selection-start-line="49" selection-start-column="12" selection-end-line="49" selection-end-column="29" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -48,10 +48,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/testing/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
+            <state relative-caret-position="63">
               <caret line="15" column="66" lean-forward="false" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
               <folding>
                 <element signature="e#0#28#0" expanded="true" />
@@ -83,7 +83,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>json</find>
       <find>testing</find>
       <find>is_s</find>
       <find>auth_u</find>
@@ -113,6 +112,7 @@
       <find>time</find>
       <find>datetime.d</find>
       <find>delete</find>
+      <find>GameState.objects</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -139,8 +139,8 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/server/server/settings.py" />
         <option value="$PROJECT_DIR$/server/testing/middlewares.py" />
-        <option value="$PROJECT_DIR$/server/testing/views.py" />
         <option value="$PROJECT_DIR$/server/testing/models.py" />
+        <option value="$PROJECT_DIR$/server/testing/views.py" />
       </list>
     </option>
   </component>
@@ -644,22 +644,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/testing/views.py">
+    <entry file="file://$PROJECT_DIR$/server/testing/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="167" column="34" lean-forward="false" selection-start-line="167" selection-start-column="28" selection-end-line="167" selection-end-column="34" />
+        <state relative-caret-position="63">
+          <caret line="15" column="66" lean-forward="false" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
           <folding>
-            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#0#28#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/testing/models.py">
+    <entry file="file://$PROJECT_DIR$/server/testing/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="15" column="66" lean-forward="false" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
+        <state relative-caret-position="205">
+          <caret line="49" column="29" lean-forward="false" selection-start-line="49" selection-start-column="12" selection-end-line="49" selection-end-column="29" />
           <folding>
-            <element signature="e#0#28#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
