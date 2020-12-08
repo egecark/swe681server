@@ -494,7 +494,8 @@ def handle_input(request, game_id):
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(bag.pop(randrange(len(bag))))
+                    if bag:
+                        player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters1 = player_letters
                 game_state.bag = bag
             elif game_state.client2 == request.user:
@@ -502,7 +503,8 @@ def handle_input(request, game_id):
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(bag.pop(randrange(len(bag))))
+                    if bag:
+                        player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters2 = player_letters
                 game_state.bag = bag
             elif game_state.client3 == request.user:
@@ -510,7 +512,8 @@ def handle_input(request, game_id):
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(bag.pop(randrange(len(bag))))
+                    if bag:
+                        player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters3 = player_letters
                 game_state.bag = bag
             elif game_state.client4 == request.user:
@@ -518,7 +521,8 @@ def handle_input(request, game_id):
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(bag.pop(randrange(len(bag))))
+                    if bag:
+                        player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters4 = player_letters
                 game_state.bag = bag
 
