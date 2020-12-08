@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MaxValueValidator
 import uuid
+import time
 
 
 # Create your models here.
@@ -22,7 +23,7 @@ class GameState(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     turn = models.IntegerField(default=0)
     board = models.CharField(max_length=5000)
-    last_move = models.DateTimeField(auto_now_add=True, verbose_name='last_move')
+    last_move = models.DateTimeField(default= time.time(), verbose_name='last_move')
     client1 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client1_game', default=None, on_delete=models.CASCADE)
     client2 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client2_game', default=None, on_delete=models.CASCADE)
     client3 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client3_game', default=None, null= True, on_delete=models.CASCADE)
