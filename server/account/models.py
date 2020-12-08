@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+import datetime
 
 
 class MyAccountManager(BaseUserManager):
@@ -44,6 +45,7 @@ class Account(AbstractBaseUser):
     last_login				= models.DateTimeField(verbose_name='last login', auto_now=True)
     win = models.IntegerField(default=0)
     lose = models.IntegerField(default=0)
+    last_time_hosted = models.DateTimeField(verbose_name='last_time_hosted', default=datetime.date(2019, 4, 13))
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

@@ -61,12 +61,17 @@ def get_user_games(request):
 def host_game(request):
     serializer = MatchmakingSerializer(data=request.data)
     data = {}
-    if serializer.is_valid():
-        matchmaker = serializer.save(request.user)
-        data['id'] = matchmaker.id
+    if (datetime.datetime.utcnow().replace(tzinfo=None) - request.user.last_time_hosted.replace(tzinfo=None)).total_seconds() > 30:
+        if serializer.is_valid():
+            request.user.last_time_hosted = datetime.datetime.utcnow()
+            request.user.save()
+            matchmaker = serializer.save(request.user)
+            data['id'] = matchmaker.id
+        else:
+            return Response('Invalid hosting specifications')
+        return Response(data)
     else:
-        return Response('Invalid hosting specifications')
-    return Response(data)
+        return HttpResponseBadRequest("You have to wait 30 seconds before hosting another game.")
 
 def start_game(client1, client2, client3, client4, caller):
     # build and save new gamestate
@@ -687,7 +692,6 @@ def handle_input(request, game_id):
             #returns score and list of connected words,
             #returns False if move had multiple rows and columns [invalid])
             word_score_with_connected_words = calculate(word, board)
-            return HttpResponse(calculate(word, board))
             d = enchant.Dict("en_US")
 
             if not word_score_with_connected_words:
