@@ -12,9 +12,10 @@ class Dummy(models.Model):
 
 class Move(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    game = models.ForeignKey('GameState', on_delete=models.CASCADE)
-    client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client', default=None, on_delete=models.CASCADE)
-    move = models.CharField(max_length=20)
+    game = models.ForeignKey('GameState', on_delete=models.DO_NOTHING)
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client', default=None, on_delete=models.DO_NOTHING)
+    move = models.CharField(max_length=100)
+    is_game_ended = models.BooleanField(default=False)
 
 #Has the state of a game including the current board, whose turn it is, and player info
 class GameState(models.Model):

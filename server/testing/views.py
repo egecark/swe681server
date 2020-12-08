@@ -539,6 +539,8 @@ def handle_input(request, game_id):
 
             game_state.save()
             serializer = GameStateSerializer(game_state)
+            move = Move(game=game_state, client=request.user, move=test_word)
+            move.save()
 
 
         return Response(serializer.data)
