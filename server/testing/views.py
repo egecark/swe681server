@@ -289,14 +289,15 @@ def whose_turn_is_it(request, game_id):
 
             bag = game_state.bag
 
-            if len(bag) == 0:
-                bag_empty = True
 
-
-            if game_state.letters1 and game_state.letters2 and game_state.letters3 and game_state.letters4 and not bag_empty:
-                game_over = False
-            else:
+            if (not game_state.letters1) or (not game_state.letters2) or (not len(bag)):
                 game_over = True
+            elif game_state.client3:
+                if not game_state.letters3:
+                    game_over = True
+            elif game_state.client4:
+                if not game_state.letters4:
+                    game_over = True
 
             if game_over:
                 game_state.delete()
