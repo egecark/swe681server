@@ -436,7 +436,7 @@ def whose_turn_is_it(request, game_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @never_cache
-def handle_input(request):
+def handle_input(request, game_id):
 
     #get the user id and check if its their turn
     if request.method == 'POST':
@@ -471,8 +471,7 @@ def handle_input(request):
 
         if game_state.active:
 
-            if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(
-                    tzinfo=None)).total_seconds() > 3600:
+            if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 3600:
                 moves = Move.objects.filter(Q(game=game_state))
                 if moves:
                     for move in moves:
