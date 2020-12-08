@@ -289,7 +289,7 @@ def calculate(input_word, board):
 
     return word_points, word, connected_words
 
-def parse_player_letters(player_letters):
+def parse_string_array(player_letters):
     s = player_letters.replace('[', '')
     s = s.replace(']', '')
     s = s.replace('\'', '')

@@ -370,7 +370,8 @@ def handle_input(request, game_id):
         elif game_state.client4 == request.user:
             player_letters = game_state.letters4
 
-        player_letters = parse_player_letters(player_letters)
+        player_letters = parse_string_array(player_letters)
+        bag = parse_string_array(game_state.bag)
         test_word = word.split(',')
 
         valid_input = True
@@ -473,29 +474,33 @@ def handle_input(request, game_id):
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(game_state.bag.pop(randrange(len(game_state.bag))))
+                    player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters1 = player_letters
+                game_state.bag = bag
             elif game_state.client2 == request.user:
                 game_state.score_2 += word_score
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(game_state.bag.pop(randrange(len(game_state.bag))))
+                    player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters2 = player_letters
+                game_state.bag = bag
             elif game_state.client3 == request.user:
                 game_state.score_3 += word_score
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(game_state.bag.pop(randrange(len(game_state.bag))))
+                    player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters3 = player_letters
+                game_state.bag = bag
             elif game_state.client4 == request.user:
                 game_state.score_4 += word_score
                 for letter in letters_used:
                     player_letters.remove(letter)
                 for ind in range(len(letters_used)):
-                    player_letters.append(game_state.bag.pop(randrange(len(game_state.bag))))
+                    player_letters.append(bag.pop(randrange(len(bag))))
                 game_state.letters4 = player_letters
+                game_state.bag = bag
 
             turn = int(game_state.turn)
 
