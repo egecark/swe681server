@@ -17,6 +17,7 @@ class Move(models.Model):
     client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client', default=None, on_delete=models.DO_NOTHING)
     move = models.CharField(max_length=100)
     is_game_ended = models.BooleanField(default=False)
+    created_date = models.DateTimeField(auto_now_add=True, verbose_name='created_date')
 
 #Has the state of a game including the current board, whose turn it is, and player info
 class GameState(models.Model):

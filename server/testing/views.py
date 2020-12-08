@@ -153,6 +153,19 @@ def display_join_page(request):
                   'matchmaking/matchmaking.html/',
                   {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
+@api_view
+@never_cache
+@permission_classes([IsAuthenticated])
+def get_moves(request):
+    moves = Move.objects.filter(Q(is_game_ended=True)).order_by('created_date')
+    response = {}
+    for move in moves:
+        response.update({'move': move.move})
+        response.update({'user_id': move.client})
+        response.update({'username': move.client.username})
+        response.update({'game_id': move.game})
+    return Response(response)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @never_cache
