@@ -4,7 +4,7 @@ from . import models
 from .models import *
 from django.utils.translation import ugettext as _
 
-word_regex = r'^(([A-Za-z](,([1-9]|[1][0-5])){2}),){0,6}[A-Za-z](,([1-9]|[1][0-5])){2}$'
+word_regex = r'^(([A-Za-z](,([0-9]|[1][0-4])){2}),){0,6}[A-Za-z](,([0-9]|[1][0-4])){2}$'
 
 class WordForm(forms.Form):
 

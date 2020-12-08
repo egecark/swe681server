@@ -289,7 +289,6 @@ def whose_turn_is_it(request, game_id):
 
             bag = game_state.bag
 
-
             if (not game_state.letters1) or (not game_state.letters2) or (not len(bag)):
                 game_over = True
             elif game_state.client3:
@@ -473,7 +472,7 @@ def handle_input(request, game_id):
         word = ""
         for row in main_word:
             letter = row[0]
-            word = word + letter
+            word = word + letter.capitalize()
 
         if not d.check(str(word)):
             valid_word = False
@@ -482,7 +481,7 @@ def handle_input(request, game_id):
             word = ""
             for row in connected:
                 letter = row[0]
-                word = word + letter
+                word = word + letter.capitalize()
             if not d.check(str(word)):
                 valid_word = False
 

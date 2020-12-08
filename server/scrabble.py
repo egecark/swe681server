@@ -5,6 +5,8 @@ DOUBLE_WORD_SCORE = [[1,1], [2,2], [3,3], [4,4], [1, 13], [2, 12], [3, 11], [4, 
 TRIPLE_LETTER_SCORE = [[1,5], [1, 9], [5,1], [5,5], [5,9], [5,13], [9,1], [9,5], [9,9], [9,13], [13, 5], [13,9]]
 DOUBLE_LETTER_SCORE = [[0, 3], [0,11], [2,6], [2,8], [3,0], [3,7], [3,14], [6,2], [6,6], [6,8], [6,12], [7,3], [7,11], [8,2], [8,6], [8,8], [8, 12], [11,0], [11,7], [11,14], [12,6], [12,8], [14, 3], [14, 11]]
 
+TWO_LETTER_WORDS = "YA HA AA BY BO BI BE BA AB DO DE OD ID ED AD YE OE HE AE FE FA OF IF EF GO AG UH OH EH AH OI HI AI JO KI KA LO LI LA EL AL MY MU MO MI ME MM MA UM OM EM HM AM NU NO NE NA UN ON IN EN AN YO HO PI PE PA UP OP QI RE OR ER AR SO SI SH US OS IS ES AS TO TI TA UT IT ET AT WO WE OW AW XU XI OX EX AX OY AY ZA"
+
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 points  = [ 1 ,  3 ,  3 ,  2 ,  1 ,  4 ,  2 ,  4 ,  1 ,  8 ,  5 ,  1 ,  3 ,  1 ,  1 ,  3 ,  10,  1 ,  1 ,  1 ,  1 ,  4 ,  4 ,  8 ,  4 ,  10]
 
