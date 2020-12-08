@@ -20,7 +20,7 @@
         <entry file="file://$PROJECT_DIR$/server/testing/views.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="133">
-              <caret line="521" column="61" lean-forward="false" selection-start-line="521" selection-start-column="61" selection-end-line="521" selection-end-column="61" />
+              <caret line="541" column="61" lean-forward="false" selection-start-line="541" selection-start-column="61" selection-end-line="541" selection-end-column="61" />
               <folding>
                 <element signature="e#1#46#0" expanded="true" />
               </folding>
@@ -205,40 +205,6 @@
               <item name="swe681server" type="462c0819:PsiDirectoryNode" />
               <item name="server" type="462c0819:PsiDirectoryNode" />
               <item name="server" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swe681server" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="swe681client" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swe681server" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="swe681client" type="462c0819:PsiDirectoryNode" />
-              <item name="game" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swe681server" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="swe681client" type="462c0819:PsiDirectoryNode" />
-              <item name="login" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swe681server" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="swe681client" type="462c0819:PsiDirectoryNode" />
-              <item name="matchmaking" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swe681server" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="swe681client" type="462c0819:PsiDirectoryNode" />
-              <item name="registration" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="swe681server" type="b2602c69:ProjectViewProjectNode" />
@@ -678,7 +644,7 @@
     <entry file="file://$PROJECT_DIR$/server/testing/views.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
-          <caret line="521" column="61" lean-forward="false" selection-start-line="521" selection-start-column="61" selection-end-line="521" selection-end-column="61" />
+          <caret line="541" column="61" lean-forward="false" selection-start-line="541" selection-start-column="61" selection-end-line="541" selection-end-column="61" />
           <folding>
             <element signature="e#1#46#0" expanded="true" />
           </folding>
