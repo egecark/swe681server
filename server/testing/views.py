@@ -330,34 +330,54 @@ def whose_turn_is_it(request, game_id):
 
                     if game_state.turn == 1:
                         game_state.client1.lose = game_state.client1.lose + 1
+                        game_state.client1.save()
                         game_state.client2.win = game_state.client2.win + 1
+                        game_state.client2.save()
 
                         if game_state.client3:
                             game_state.client3.win = game_state.client3.win + 1
+                            game_state.client3.save()
                         if game_state.client4:
                             game_state.client4.win = game_state.client4.win + 1
+                            game_state.client4.save()
 
                     elif game_state.turn == 2:
                         game_state.client2.lose = game_state.client2.lose + 1
+                        game_state.client2.save()
+
                         game_state.client1.win = game_state.client1.win + 1
+                        game_state.client1.save()
 
                         if game_state.client3:
                             game_state.client3.win = game_state.client3.win + 1
+                            game_state.client3.save()
                         if game_state.client4:
                             game_state.client4.win = game_state.client4.win + 1
+                            game_state.client4.save()
 
                     elif game_state.turn == 3:
                         game_state.client3.lose = game_state.client3.lose + 1
                         game_state.client1.win = game_state.client1.win + 1
+                        game_state.client1.save()
+
                         game_state.client2.win = game_state.client2.win + 1
+                        game_state.client2.save()
                         if game_state.client4:
                             game_state.client4.win = game_state.client4.win + 1
+                            game_state.client4.save()
 
                     elif game_state.turn == 4:
                         game_state.client4.lose = game_state.client4.lose + 1
+                        game_state.client4.save()
+
                         game_state.client1.win = game_state.client1.win + 1
+                        game_state.client1.save()
+
                         game_state.client2.win = game_state.client2.win + 1
+                        game_state.client2.save()
+
                         game_state.client3.win = game_state.client3.win + 1
+                        game_state.client3.save()
 
                     game_state.active = False
                     game_state.save()
