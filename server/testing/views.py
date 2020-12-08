@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.cache import never_cache
 
 from django.contrib.auth import login
 
@@ -22,7 +23,7 @@ import random
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
+@never_cache
 def get_available_matches(request):
     matches = Matchmaking.objects.all()
     serializer = MatchmakingSerializer(matches, many=True)
@@ -30,6 +31,7 @@ def get_available_matches(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def get_user_matches(request):
     matches = Matchmaking.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
     serializer = MatchmakingSerializer(matches, many=True)
@@ -37,6 +39,7 @@ def get_user_matches(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def get_user_games(request):
     games = GameState.objects.filter(Q(client1=request.user.id) | Q(client2=request.user.id) | Q(client3=request.user.id) | Q(client4=request.user.id))
     serializer = GameStateSerializer(games, many=True)
@@ -44,6 +47,7 @@ def get_user_games(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def host_game(request):
     serializer = MatchmakingSerializer(data=request.data)
     data = {}
@@ -105,6 +109,7 @@ def start_game(client1, client2, client3, client4, caller):
     return response
 
 @api_view(['GET'])
+@never_cache
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer, JSONRenderer])
 def display_join_page(request):
@@ -112,6 +117,7 @@ def display_join_page(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def join_game(request, matchmaking_id):
     user = request.user
 
@@ -158,6 +164,7 @@ def join_game(request, matchmaking_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def find_game(request):
 
     user_id = request.user
@@ -241,6 +248,7 @@ def find_game(request):
 #send score, board state
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def whose_turn_is_it(request, game_id):
 
     if request.method == 'GET':
@@ -299,6 +307,7 @@ def whose_turn_is_it(request, game_id):
     #checks that all words involved are valid words
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def handle_input(request, game_id):
 
     #get the user id and check if its their turn
@@ -517,21 +526,25 @@ def handle_input(request, game_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def index(request):
     return render(request, 'game/index.html', {"form":WordForm})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@never_cache
 def index_id(request, game_id):
     return render(request, 'game/index.html', {"form":WordForm})
 
 @api_view(['GET'])
 @permission_classes([])
+@never_cache
 def dashboard(request):
     return render(request, "game/dashboard.html")
 
 @api_view(['GET', 'POST'])
 @permission_classes([])
+@never_cache
 def register(request):
 
     if request.method == "GET":
