@@ -322,7 +322,7 @@ def whose_turn_is_it(request, game_id):
 
             if game_state.active:
 
-                if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 15:
+                if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 3600:
                     moves = Move.objects.filter(Q(game=game_state))
                     if moves:
                         for move in moves:
@@ -469,196 +469,262 @@ def handle_input(request):
         else:
             return HttpResponse('Invalid Move')
 
-        if game_state.client4:
-            num_players = 4
-        elif game_state.client3:
-            num_players = 3
-        else:
-            num_players = 2
+        if game_state.active:
+
+            if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(
+                    tzinfo=None)).total_seconds() > 3600:
+                moves = Move.objects.filter(Q(game=game_state))
+                if moves:
+                    for move in moves:
+                        move.is_game_ended = True
+
+                if game_state.turn == 1:
+                    game_state.client1.lose = game_state.client1.lose + 1
+                    game_state.client1.save()
+                    game_state.client2.win = game_state.client2.win + 1
+                    game_state.client2.save()
+
+                    if game_state.client3:
+                        game_state.client3.win = game_state.client3.win + 1
+                        game_state.client3.save()
+                    if game_state.client4:
+                        game_state.client4.win = game_state.client4.win + 1
+                        game_state.client4.save()
+
+                elif game_state.turn == 2:
+                    game_state.client2.lose = game_state.client2.lose + 1
+                    game_state.client2.save()
+
+                    game_state.client1.win = game_state.client1.win + 1
+                    game_state.client1.save()
+
+                    if game_state.client3:
+                        game_state.client3.win = game_state.client3.win + 1
+                        game_state.client3.save()
+                    if game_state.client4:
+                        game_state.client4.win = game_state.client4.win + 1
+                        game_state.client4.save()
+
+                elif game_state.turn == 3:
+                    game_state.client3.lose = game_state.client3.lose + 1
+                    game_state.client1.win = game_state.client1.win + 1
+                    game_state.client1.save()
+
+                    game_state.client2.win = game_state.client2.win + 1
+                    game_state.client2.save()
+                    if game_state.client4:
+                        game_state.client4.win = game_state.client4.win + 1
+                        game_state.client4.save()
+
+                elif game_state.turn == 4:
+                    game_state.client4.lose = game_state.client4.lose + 1
+                    game_state.client4.save()
+
+                    game_state.client1.win = game_state.client1.win + 1
+                    game_state.client1.save()
+
+                    game_state.client2.win = game_state.client2.win + 1
+                    game_state.client2.save()
+
+                    game_state.client3.win = game_state.client3.win + 1
+                    game_state.client3.save()
+
+                game_state.active = False
+                game_state.save()
+                return HttpResponseBadRequest("Time out")
+
+            if game_state.client4:
+                num_players = 4
+            elif game_state.client3:
+                num_players = 3
+            else:
+                num_players = 2
 
 
-        #check user's letters
-        player_letters = ''
+            #check user's letters
+            player_letters = ''
 
-        if game_state.client1 == request.user:
-            if int(game_state.turn) != 1:
-                return Response('Invalid Move')
-            player_letters = game_state.letters1
-        elif game_state.client2 == request.user:
-            if int(game_state.turn) != 2:
-                return Response('Invalid Move')
-            player_letters = game_state.letters2
-        elif game_state.client3 == request.user:
-            if int(game_state.turn) != 3:
-                return Response('Invalid Move')
-            player_letters = game_state.letters3
-        elif game_state.client4 == request.user:
-            if int(game_state.turn) != 4:
-                return Response('Invalid Move')
-            player_letters = game_state.letters4
+            if game_state.client1 == request.user:
+                if int(game_state.turn) != 1:
+                    return Response('Invalid Move')
+                player_letters = game_state.letters1
+            elif game_state.client2 == request.user:
+                if int(game_state.turn) != 2:
+                    return Response('Invalid Move')
+                player_letters = game_state.letters2
+            elif game_state.client3 == request.user:
+                if int(game_state.turn) != 3:
+                    return Response('Invalid Move')
+                player_letters = game_state.letters3
+            elif game_state.client4 == request.user:
+                if int(game_state.turn) != 4:
+                    return Response('Invalid Move')
+                player_letters = game_state.letters4
 
-        player_letters = parse_string_array(player_letters)
-        bag = parse_string_array(game_state.bag)
-        test_word = word.split(',')
+            player_letters = parse_string_array(player_letters)
+            bag = parse_string_array(game_state.bag)
+            test_word = word.split(',')
 
-        valid_input = True
-        letters_used = []
-        for i in range(len(test_word)):
-            if i % 3 == 0: #should be a letter
-                if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
-                    valid_input = False
+            valid_input = True
+            letters_used = []
+            for i in range(len(test_word)):
+                if i % 3 == 0: #should be a letter
+                    if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
+                        valid_input = False
 
-                # if not in the current player's letters
-                elif not test_word[i].capitalize() in player_letters:
-                    valid_input = False
+                    # if not in the current player's letters
+                    elif not test_word[i].capitalize() in player_letters:
+                        valid_input = False
 
-                letters_used.append(test_word[i].capitalize())
-            if i % 3 == 1: #should be a number (row)
-                if not test_word[i].isdigit(): #if its not an int
-                    valid_input = False
+                    letters_used.append(test_word[i].capitalize())
+                if i % 3 == 1: #should be a number (row)
+                    if not test_word[i].isdigit(): #if its not an int
+                        valid_input = False
 
-                # if the index would not fit on the board
-                elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
-                    valid_input = False
+                    # if the index would not fit on the board
+                    elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
+                        valid_input = False
 
-            if i % 3 == 2: #should be a number (col)
-                if not test_word[i].isdigit(): #if its not an int
-                    valid_input = False
+                if i % 3 == 2: #should be a number (col)
+                    if not test_word[i].isdigit(): #if its not an int
+                        valid_input = False
 
-                # if the index would not fit on the board
-                elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
-                    valid_input = False
-
-
-        if not valid_input:
-            return HttpResponse('Invalid Move')
-
-        board = game_state.board
-
-        board, board_check = parse_board(board)
-
-        #if false, couldnt parse board
-        if not board_check:
-            return HttpResponse('Invalid word')
-
-        board, board_check = update_board(word, board)
-
-        #if false, invalid word entered
-        if not board_check:
-            return HttpResponse('Invalid word')
+                    # if the index would not fit on the board
+                    elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
+                        valid_input = False
 
 
-        #calculate score function (calculates score of move,
-        #returns score and list of connected words,
-        #returns False if move had multiple rows and columns [invalid])
-        word_score_with_connected_words = calculate(word, board)
-        d = enchant.Dict("en_US")
+            if not valid_input:
+                return HttpResponse('Invalid Move')
 
-        if not word_score_with_connected_words:
-            return HttpResponse('Invalid word')
+            board = game_state.board
+
+            board, board_check = parse_board(board)
+
+            #if false, couldnt parse board
+            if not board_check:
+                return HttpResponse('Invalid word')
+
+            board, board_check = update_board(word, board)
+
+            #if false, invalid word entered
+            if not board_check:
+                return HttpResponse('Invalid word')
 
 
-        valid_word = True
+            #calculate score function (calculates score of move,
+            #returns score and list of connected words,
+            #returns False if move had multiple rows and columns [invalid])
+            word_score_with_connected_words = calculate(word, board)
+            d = enchant.Dict("en_US")
 
-        connected_words = False
-        main_word = []
-        #if false, then the input word was not in a straight line (multiple columns and rows)
-        if word_score_with_connected_words:
-            word_score = word_score_with_connected_words[0]
-            main_word = word_score_with_connected_words[1]
-            connected_words = word_score_with_connected_words[2]
-        else:
-            valid_word = False
+            if not word_score_with_connected_words:
+                return HttpResponse('Invalid word')
 
-        first_turn = True
 
-        if game_state.score_1 and game_state.score_2 and game_state.score_3 and game_state.score_4:
-            first_turn = False
+            valid_word = True
 
-        #If no connected words found and its not the first move
-        if not connected_words and not first_turn:
-            valid_word = False
+            connected_words = False
+            main_word = []
+            #if false, then the input word was not in a straight line (multiple columns and rows)
+            if word_score_with_connected_words:
+                word_score = word_score_with_connected_words[0]
+                main_word = word_score_with_connected_words[1]
+                connected_words = word_score_with_connected_words[2]
+            else:
+                valid_word = False
 
-        #check if words are valid scrabble words
-        word = ""
-        for row in main_word:
-            letter = row[0]
-            word = word + letter.capitalize()
+            first_turn = True
 
-        if not d.check(str(word)):
-            valid_word = False
+            if game_state.score_1 and game_state.score_2 and game_state.score_3 and game_state.score_4:
+                first_turn = False
 
-        for connected in connected_words:
+            #If no connected words found and its not the first move
+            if not connected_words and not first_turn:
+                valid_word = False
+
+            #check if words are valid scrabble words
             word = ""
-            for row in connected:
+            for row in main_word:
                 letter = row[0]
                 word = word + letter.capitalize()
+
             if not d.check(str(word)):
                 valid_word = False
 
-        if not valid_word:
-            serializer = GameStateSerializer(game_state)
-            return HttpResponseBadRequest('not a valid move')
+            for connected in connected_words:
+                word = ""
+                for row in connected:
+                    letter = row[0]
+                    word = word + letter.capitalize()
+                if not d.check(str(word)):
+                    valid_word = False
+
+            if not valid_word:
+                serializer = GameStateSerializer(game_state)
+                return HttpResponseBadRequest('not a valid move')
+            else:
+                if game_state.client1 == request.user:
+                    game_state.score_1 += word_score
+                    for letter in letters_used:
+                        player_letters.remove(letter)
+                    for ind in range(len(letters_used)):
+                        if bag:
+                            player_letters.append(bag.pop(random.randrange(len(bag))))
+                    game_state.letters1 = player_letters
+                    game_state.bag = bag
+                elif game_state.client2 == request.user:
+                    game_state.score_2 += word_score
+                    for letter in letters_used:
+                        player_letters.remove(letter)
+                    for ind in range(len(letters_used)):
+                        if bag:
+                            player_letters.append(bag.pop(random.randrange(len(bag))))
+                    game_state.letters2 = player_letters
+                    game_state.bag = bag
+                elif game_state.client3 == request.user:
+                    game_state.score_3 += word_score
+                    for letter in letters_used:
+                        player_letters.remove(letter)
+                    for ind in range(len(letters_used)):
+                        if bag:
+                            player_letters.append(bag.pop(random.randrange(len(bag))))
+                    game_state.letters3 = player_letters
+                    game_state.bag = bag
+                elif game_state.client4 == request.user:
+                    game_state.score_4 += word_score
+                    for letter in letters_used:
+                        player_letters.remove(letter)
+                    for ind in range(len(letters_used)):
+                        if bag:
+                            player_letters.append(bag.pop(random.randrange(len(bag))))
+                    game_state.letters4 = player_letters
+                    game_state.bag = bag
+
+                turn = int(game_state.turn)
+
+
+                turn = turn + 1
+
+                if turn > num_players:
+                    if turn % num_players:
+                        turn = turn % num_players
+                    else:
+                        turn = (turn % num_players) + num_players
+
+                game_state.turn = turn
+
+                game_state.board = str(board.tolist())
+
+                game_state.save()
+                serializer = GameStateSerializer(game_state)
+                move = Move(game=game_state, client=request.user, move=test_word)
+                move.save()
+
+
+            return Response(serializer.data)
         else:
-            if game_state.client1 == request.user:
-                game_state.score_1 += word_score
-                for letter in letters_used:
-                    player_letters.remove(letter)
-                for ind in range(len(letters_used)):
-                    if bag:
-                        player_letters.append(bag.pop(random.randrange(len(bag))))
-                game_state.letters1 = player_letters
-                game_state.bag = bag
-            elif game_state.client2 == request.user:
-                game_state.score_2 += word_score
-                for letter in letters_used:
-                    player_letters.remove(letter)
-                for ind in range(len(letters_used)):
-                    if bag:
-                        player_letters.append(bag.pop(random.randrange(len(bag))))
-                game_state.letters2 = player_letters
-                game_state.bag = bag
-            elif game_state.client3 == request.user:
-                game_state.score_3 += word_score
-                for letter in letters_used:
-                    player_letters.remove(letter)
-                for ind in range(len(letters_used)):
-                    if bag:
-                        player_letters.append(bag.pop(random.randrange(len(bag))))
-                game_state.letters3 = player_letters
-                game_state.bag = bag
-            elif game_state.client4 == request.user:
-                game_state.score_4 += word_score
-                for letter in letters_used:
-                    player_letters.remove(letter)
-                for ind in range(len(letters_used)):
-                    if bag:
-                        player_letters.append(bag.pop(random.randrange(len(bag))))
-                game_state.letters4 = player_letters
-                game_state.bag = bag
-
-            turn = int(game_state.turn)
-
-
-            turn = turn + 1
-
-            if turn > num_players:
-                if turn % num_players:
-                    turn = turn % num_players
-                else:
-                    turn = (turn % num_players) + num_players
-
-            game_state.turn = turn
-
-            game_state.board = str(board.tolist())
-
-            game_state.save()
-            serializer = GameStateSerializer(game_state)
-            move = Move(game=game_state, client=request.user, move=test_word)
-            move.save()
-
-
-        return Response(serializer.data)
+            return HttpResponseBadRequest("This game has ended")
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
