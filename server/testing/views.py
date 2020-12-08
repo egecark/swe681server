@@ -712,7 +712,7 @@ def handle_input(request, game_id):
 
             #If no connected words found and its not the first move
             if not connected_words and not first_turn:
-                print("asdf")
+                return HttpResponseBadRequest("qwer")
                 valid_word = False
 
             #check if words are valid scrabble words
@@ -722,8 +722,7 @@ def handle_input(request, game_id):
                 word = word + letter.capitalize()
 
             if not d.check(str(word)):
-                print("qwer")
-                print(word)
+                return HttpResponseBadRequest("asdf" + str(word))
                 valid_word = False
 
             for connected in connected_words:
@@ -732,8 +731,7 @@ def handle_input(request, game_id):
                     letter = row[0]
                     word = word + letter.capitalize()
                 if not d.check(str(word)):
-                    print("fff")
-                    print(word)
+                    return HttpResponseBadRequest("sssss" + str(word))
                     valid_word = False
 
             if not valid_word:
