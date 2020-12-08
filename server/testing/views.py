@@ -283,6 +283,26 @@ def whose_turn_is_it(request, game_id):
                 player_letters = game_state.letters4
             else:
                 return HttpResponse("You are not in this game")
+
+            bag_empty = False
+            game_over = False
+
+            bag = game_state.bag
+
+            if len(bag) == 0:
+                bag_empty = True
+
+
+            if game_state.letters1 and game_state.letters2 and game_state.letters3 and game_state.letters4 and not bag_empty:
+                game_over = False
+            else:
+                game_over = True
+
+            if game_over:
+                game_state.delete()
+                return HttpResponse('Game over')
+
+
             serializer = GameStateSerializer(game_state, many=False)
             response = {'player_letters': player_letters}
             response.update(serializer.data)
