@@ -13,7 +13,7 @@ class Dummy(models.Model):
 
 class Move(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    game = models.ForeignKey('GameState', on_delete=models.DO_NOTHING)
+    game = models.ForeignKey('GameState', on_delete=models.CASCADE)
     client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client', default=None, on_delete=models.DO_NOTHING)
     move = models.CharField(max_length=100)
     is_game_ended = models.BooleanField(default=False)
@@ -41,6 +41,7 @@ class GameState(models.Model):
     move2 = models.CharField(null=True, default=None, max_length=7)
     move3 = models.CharField(null=True, default=None, max_length=7)
     move4 = models.CharField(null=True, default=None, max_length=7)
+    active = models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)
 

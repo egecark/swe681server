@@ -319,84 +319,90 @@ def whose_turn_is_it(request, game_id):
         if game_state:
             game_state = game_state[0]
 
-            if  (datetime.datetime.utcnow() - game_state.last_move.replace(tzinfo=None)).total_seconds() > 20:
-                moves = Move.objects.filter(Q(game=game_state))
-                if moves:
-                    for move in moves:
-                        move.is_game_ended = True
+            if game_state.active:
 
-                if game_state.turn == 1:
-                    game_state.client1.lose = game_state.client1.lose + 1
-                    game_state.client2.win = game_state.client2.win + 1
+                if (datetime.datetime.utcnow() - game_state.last_move.replace(tzinfo=None)).total_seconds() > 20:
+                    moves = Move.objects.filter(Q(game=game_state))
+                    if moves:
+                        for move in moves:
+                            move.is_game_ended = True
 
-                    if game_state.client3:
+                    if game_state.turn == 1:
+                        game_state.client1.lose = game_state.client1.lose + 1
+                        game_state.client2.win = game_state.client2.win + 1
+
+                        if game_state.client3:
+                            game_state.client3.win = game_state.client3.win + 1
+                        if game_state.client4:
+                            game_state.client4.win = game_state.client4.win + 1
+
+                    elif game_state.turn == 2:
+                        game_state.client2.lose = game_state.client1.lose + 1
+                        game_state.client1.win = game_state.client1.win + 1
+
+                        if game_state.client3:
+                            game_state.client3.win = game_state.client3.win + 1
+                        if game_state.client4:
+                            game_state.client4.win = game_state.client4.win + 1
+
+                    elif game_state.turn == 3:
+                        game_state.client3.lose = game_state.client1.lose + 1
+                        game_state.client1.win = game_state.client1.win + 1
+                        game_state.client2.win = game_state.client2.win + 1
+                        if game_state.client4:
+                            game_state.client4.win = game_state.client4.win + 1
+
+                    elif game_state.turn == 4:
+                        game_state.client4.lose = game_state.client1.lose + 1
+                        game_state.client1.win = game_state.client1.win + 1
+                        game_state.client2.win = game_state.client2.win + 1
                         game_state.client3.win = game_state.client3.win + 1
-                    if game_state.client4:
-                        game_state.client4.win = game_state.client4.win + 1
 
-                elif game_state.turn == 2:
-                    game_state.client2.lose = game_state.client1.lose + 1
-                    game_state.client1.win = game_state.client1.win + 1
-
-                    if game_state.client3:
-                        game_state.client3.win = game_state.client3.win + 1
-                    if game_state.client4:
-                        game_state.client4.win = game_state.client4.win + 1
-
-                elif game_state.turn == 3:
-                    game_state.client3.lose = game_state.client1.lose + 1
-                    game_state.client1.win = game_state.client1.win + 1
-                    game_state.client2.win = game_state.client2.win + 1
-                    if game_state.client4:
-                        game_state.client4.win = game_state.client4.win + 1
-
-                elif game_state.turn == 4:
-                    game_state.client4.lose = game_state.client1.lose + 1
-                    game_state.client1.win = game_state.client1.win + 1
-                    game_state.client2.win = game_state.client2.win + 1
-                    game_state.client3.win = game_state.client3.win + 1
-
-                game_state.delete()
-                return HttpResponse(time.time() - (game_state.last_move - datetime.datetime(1970,1,1)).total_seconds())
+                    game_state.active = False
+                    game_state.save()
+                    return HttpResponse(time.time() - (game_state.last_move - datetime.datetime(1970,1,1)).total_seconds())
 
 
-            if request.user == game_state.client1:
-                player_letters = game_state.letters1
-            elif request.user == game_state.client2:
-                player_letters = game_state.letters2
-            elif request.user == game_state.client3:
-                player_letters = game_state.letters3
-            elif request.user == game_state.client4:
-                player_letters = game_state.letters4
+                if request.user == game_state.client1:
+                    player_letters = game_state.letters1
+                elif request.user == game_state.client2:
+                    player_letters = game_state.letters2
+                elif request.user == game_state.client3:
+                    player_letters = game_state.letters3
+                elif request.user == game_state.client4:
+                    player_letters = game_state.letters4
+                else:
+                    return HttpResponse("You are not in this game")
+
+                bag_empty = False
+                game_over = False
+
+                bag = game_state.bag
+
+                if (not game_state.letters1) or (not game_state.letters2) or (not len(bag)):
+                    game_over = True
+                elif game_state.client3:
+                    if not game_state.letters3:
+                        game_over = True
+                elif game_state.client4:
+                    if not game_state.letters4:
+                        game_over = True
+
+                if game_over:
+                    game_state.active = False
+                    game_state.save()
+                    return HttpResponse('Game over')
+
+
+                serializer = GameStateSerializer(game_state, many=False)
+                response = {'player_letters': player_letters}
+                response.update(serializer.data)
+                return Response(response)
             else:
-                return HttpResponse("You are not in this game")
-
-            bag_empty = False
-            game_over = False
-
-            bag = game_state.bag
-
-            if (not game_state.letters1) or (not game_state.letters2) or (not len(bag)):
-                game_over = True
-            elif game_state.client3:
-                if not game_state.letters3:
-                    game_over = True
-            elif game_state.client4:
-                if not game_state.letters4:
-                    game_over = True
-
-            if game_over:
-                game_state.delete()
-                return HttpResponse('Game over')
-
-
-            serializer = GameStateSerializer(game_state, many=False)
-            response = {'player_letters': player_letters}
-            response.update(serializer.data)
-            return Response(response)
-
+                return HttpResponseBadRequest("This game has ended")
         else:
             return HttpResponse("You are not in this game")
+
 
 
 #function to handle user input. checks:
