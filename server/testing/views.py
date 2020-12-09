@@ -701,35 +701,50 @@ def handle_input(request, game_id):
             input_rows = []
             input_cols = []
 
+            temp_letters = player_letters
+
             for i in range(len(test_word)):
+                if not valid_input:
+                    break
                 if i % 3 == 0: #should be a letter
-                    if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
+                    if not test_word[i].capitalize() in letters: #if not a valid scrabble letter
                         valid_input = False
+                        break
 
                     # if not in the current player's letters
-                    elif not test_word[i].capitalize() in player_letters:
+                    elif not test_word[i].capitalize() in temp_letters:
                         valid_input = False
+                        break
 
                     letters_used.append(test_word[i].capitalize())
+                    temp_letters.remove(test_word[i].capitalize()) #remove letter from user's hand
                 if i % 3 == 1: #should be a number (row)
                     if not test_word[i].isdigit(): #if its not an int
                         valid_input = False
+                        break
 
                     # if the index would not fit on the board
                     elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
                         valid_input = False
+                        break
                     else:
                         input_rows.append(int(test_word[i]))
 
                 if i % 3 == 2: #should be a number (col)
                     if not test_word[i].isdigit(): #if its not an int
                         valid_input = False
+                        break
 
                     # if the index would not fit on the board
                     elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
                         valid_input = False
+                        break
                     else:
                         input_cols.append(int(test_word[i]))
+
+            if not valid_input:
+                return HttpResponse('Invalid Move')
+
 
             first_turn = True
 
@@ -816,8 +831,6 @@ def handle_input(request, game_id):
             else:
                 if game_state.client1 == request.user:
                     game_state.score_1 += word_score
-                    for letter in letters_used:
-                        player_letters.remove(letter)
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
@@ -826,8 +839,6 @@ def handle_input(request, game_id):
                     game_state.bag = bag
                 elif game_state.client2 == request.user:
                     game_state.score_2 += word_score
-                    for letter in letters_used:
-                        player_letters.remove(letter)
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
@@ -836,8 +847,6 @@ def handle_input(request, game_id):
                     game_state.bag = bag
                 elif game_state.client3 == request.user:
                     game_state.score_3 += word_score
-                    for letter in letters_used:
-                        player_letters.remove(letter)
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
@@ -846,8 +855,6 @@ def handle_input(request, game_id):
                     game_state.bag = bag
                 elif game_state.client4 == request.user:
                     game_state.score_4 += word_score
-                    for letter in letters_used:
-                        player_letters.remove(letter)
                     for ind in range(len(letters_used)):
                         if bag:
                             player_letters.append(bag.pop(random.randrange(len(bag))))
