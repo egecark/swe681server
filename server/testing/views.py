@@ -164,17 +164,6 @@ def display_join_page(request):
                   'matchmaking/matchmaking.html/',
                   {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
-#@api_view(['GET'])
-#@never_cache
-#@permission_classes([IsAuthenticated])
-#def get_ids_of_finished_games(request):
-#    move_ids = Move.objects.all().values_list('game_id', flat=True)
-#    response = {}
-
-   # for id in move_ids:
-   #     response.update(id)
-
-    #return Response(response)
 
 @api_view(['GET'])
 @never_cache
@@ -183,7 +172,7 @@ def get_moves(request):
     moves = Move.objects.filter(Q(is_game_ended=True))
     response = {}
     for move in moves:
-        response.update({str(move.client): {'move': move.move, 'username': move.client.username, 'game_id': move.game.id}})
+        response.update({str(move.id): {'move': move.move, 'username': move.client.username, 'game_id': move.game.id}})
     return Response(response)
 
 @api_view(['GET'])
@@ -373,8 +362,10 @@ def whose_turn_is_it(request, game_id):
                 if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 3600:
                     moves = Move.objects.filter(Q(game=game_state))
                     if moves:
+                        moves.update(is_game_ended=True)
                         for move in moves:
                             move.is_game_ended = True
+                            move.save()
 
                     if game_state.turn == 1:
                         game_state.client1.lose = game_state.client1.lose + 1
@@ -448,26 +439,44 @@ def whose_turn_is_it(request, game_id):
 
                 bag = game_state.bag
 
-                #if a player is out of letters and the bag is empty, game ends
-                if ((not game_state.letters1) or (not game_state.letters2)) and (not len(bag)):
+                player_out_of_letters = False
+
+
+                if game_state.client1:
+                    if not any(item in game_state.letters1 for item in letters):
+                        player_out_of_letters = True
+
+                if game_state.client2:
+                    if not any(item in game_state.letters2 for item in letters):
+                        player_out_of_letters = True
+
+                if game_state.client3:
+                    if not any(item in game_state.letters3 for item in letters):
+                        player_out_of_letters = True
+
+                if game_state.client4:
+                    if not any(item in game_state.letters4 for item in letters):
+                        player_out_of_letters = True
+
+                if player_out_of_letters and not any(item in bag for item in letters):
                     game_over = True
-                elif game_state.client3:
-                    if not game_state.letters3 and (not len(bag)):
-                        game_over = True
-                elif game_state.client4:
-                    if not game_state.letters4 and (not len(bag)):
-                        game_over = True
 
                 if game_over:
+                    moves = Move.objects.filter(Q(game=game_state))
+                    if moves:
+                        for move in moves:
+                            move.is_game_ended = True
+                            move.save()
+
                     game_state.active = False
-                    score1 = game_state.score1
-                    score2 = game_state.score2
+                    score1 = game_state.score_1
+                    score2 = game_state.score_2
                     score3 = 0
                     score4 = 0
                     if game_state.client3:
-                        score3 = game_state.score3
+                        score3 = game_state.score_3
                     if game_state.client4:
-                        score4 = game_state.score4
+                        score4 = game_state.score_4
 
                     winner = 1
 
@@ -594,8 +603,10 @@ def handle_input(request, game_id):
             if (datetime.datetime.utcnow().replace(tzinfo=None) - game_state.last_move.replace(tzinfo=None)).total_seconds() > 3600:
                 moves = Move.objects.filter(Q(game=game_state))
                 if moves:
+                    moves.update(is_game_ended=True)
                     for move in moves:
                         move.is_game_ended = True
+                        move.save()
 
                 if game_state.turn == 1:
                     game_state.client1.lose = game_state.client1.lose + 1
@@ -686,6 +697,10 @@ def handle_input(request, game_id):
 
             valid_input = True
             letters_used = []
+
+            input_rows = []
+            input_cols = []
+
             for i in range(len(test_word)):
                 if i % 3 == 0: #should be a letter
                     if not test_word[i].capitalize() in letters: #if not in scrabble.py's letters list
@@ -703,6 +718,8 @@ def handle_input(request, game_id):
                     # if the index would not fit on the board
                     elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
                         valid_input = False
+                    else:
+                        input_rows.append(int(test_word[i]))
 
                 if i % 3 == 2: #should be a number (col)
                     if not test_word[i].isdigit(): #if its not an int
@@ -711,7 +728,22 @@ def handle_input(request, game_id):
                     # if the index would not fit on the board
                     elif int(test_word[i]) not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]:
                         valid_input = False
+                    else:
+                        input_cols.append(int(test_word[i]))
 
+            first_turn = True
+
+            if game_state.score_1 or game_state.score_2 or game_state.score_3 or game_state.score_4:
+                first_turn = False
+
+            first_turn_check = True
+
+            for i in range(len(input_rows)):
+                if input_rows[i] == 7 and input_cols[i] == 7:
+                    first_turn_check = False
+
+            if first_turn_check and first_turn:
+                valid_input = False
 
             if not valid_input:
                 return HttpResponse('Invalid Move')
@@ -752,11 +784,6 @@ def handle_input(request, game_id):
                 connected_words = word_score_with_connected_words[2]
             else:
                 valid_word = False
-
-            first_turn = True
-
-            if game_state.score_1 or game_state.score_2 or game_state.score_3 or game_state.score_4:
-                first_turn = False
 
             try:
                 #If no connected words found and its not the first move
