@@ -164,17 +164,26 @@ def display_join_page(request):
                   'matchmaking/matchmaking.html/',
                   {"hostform":MatchMakingHostingForm, "joinform":MatchMakingJoiningForm})
 
+#@api_view(['GET'])
+#@never_cache
+#@permission_classes([IsAuthenticated])
+#def get_ids_of_finished_games(request):
+#    move_ids = Move.objects.all().values_list('game_id', flat=True)
+#    response = {}
+
+   # for id in move_ids:
+   #     response.update(id)
+
+    #return Response(response)
+
 @api_view(['GET'])
 @never_cache
 @permission_classes([IsAuthenticated])
 def get_moves(request):
-    moves = Move.objects.filter(Q(is_game_ended=True)).order_by('created_date')
+    moves = Move.objects.filter(Q(is_game_ended=True))
     response = {}
     for move in moves:
-        response.update({'move': move.move})
-        response.update({'user_id': move.client})
-        response.update({'username': move.client.username})
-        response.update({'game_id': move.game})
+        response.update({str(move.client): {'move': move.move, 'username': move.client.username, 'game_id': move.game.id}})
     return Response(response)
 
 @api_view(['GET'])
@@ -185,9 +194,6 @@ def get_user_statistics(request):
     response = {}
     for account in accounts:
         response.update({str(account.id): {'username': account.username, 'win': account.win, 'lose': account.lose}})
-#        response.update({'username': account.username})
-#        response.update({'win': account.win})
-#        response.update({'lose': account.lose})
     return Response(response)
 
 @api_view(['POST'])
@@ -752,9 +758,13 @@ def handle_input(request, game_id):
             if game_state.score_1 or game_state.score_2 or game_state.score_3 or game_state.score_4:
                 first_turn = False
 
-            #If no connected words found and its not the first move
-            if not connected_words and not first_turn and main_word == word:
-                valid_word = False
+            try:
+                #If no connected words found and its not the first move
+                if not list(connected_words) and not first_turn and main_word == word:
+                    valid_word = False
+            except:
+                pass
+
 
             #check if words are valid scrabble words
             word = ""

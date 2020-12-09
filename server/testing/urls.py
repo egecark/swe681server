@@ -8,6 +8,7 @@ app_name = 'testing'
 urlpatterns = [
     path('accounts/', include("django.contrib.auth.urls")),
     path('dashboard/', dashboard, name="dashboard"),
+#    path('finished_games/ids', get_ids_of_finished_games, name="ids"),
     path('moves/', get_moves, name="moves"),
     path('statistics/', get_user_statistics, name="statistics"),
     path('register/', register, name="register"),
