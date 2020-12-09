@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'oj$_v33=xt1*ral-a&+2i38@qi&-pz6t1r=bk3b_uv+ns$o@ih'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS=['ec2-3-17-188-16.us-east-2.compute.amazonaws.com',
                 'swe681project.com',
