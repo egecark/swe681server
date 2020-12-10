@@ -1,3 +1,4 @@
+
 import random
 import time
 import enchant
@@ -48,11 +49,11 @@ def get_user_matches(request):
 @permission_classes([IsAuthenticated])
 @never_cache
 def get_user_games(request):
-    games = GameState.objects.filter((Q(client1=request.user.id) |
-                                     Q(client2=request.user.id) |
-                                     Q(client3=request.user.id) |
-                                     Q(client4=request.user.id)) and
-                                     Q(active= True))
+    games = GameState.objects.filter((Q(client1=request.user) |
+                                     Q(client2=request.user) |
+                                     Q(client3=request.user) |
+                                     Q(client4=request.user)),
+                                     active= True)
     serializer = GameStateSerializer(games, many=True)
     return Response(serializer.data)
 
