@@ -169,7 +169,7 @@ def display_join_page(request):
 @never_cache
 @permission_classes([IsAuthenticated])
 def get_moves(request):
-    moves = Move.objects.filter(Q(is_game_ended=True))
+    moves = Move.objects.filter(Q(is_game_ended=True)).order_by('game')
     response = {}
     for move in moves:
         response.update({str(move.id): {'move': move.move, 'username': move.client.username, 'game_id': move.game.id}})
